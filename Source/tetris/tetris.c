@@ -31,6 +31,8 @@
 volatile int board[ROWS][COLS]; 
 
 volatile GameState gameState = GAME_PAUSED;
+static uint8_t firstStart = 1;
+
 /* ==============================================
    4. DEFINIZIONE DEI PEZZI (TETRAMINI)
    ============================================== */
@@ -134,6 +136,8 @@ void Init_Game_Graphics(void) {
     GUI_Text(160, 20, (uint8_t *) "TETRIS", White, Black);
     GUI_Text(160, 60, (uint8_t *) "Score:", White, Black);
     GUI_Text(160, 80, (uint8_t *) "0", Red, Black);
+		GUI_Text(160, 120, (uint8_t *) "Press key1", COLOR_T, Black);
+		GUI_Text(160, 140, (uint8_t *) "to start", COLOR_T, Black);
 }
 
 // Funzione per resettare la matrice a zero
@@ -191,7 +195,47 @@ void spawn_piece(){
 	Reset_Board();
 	Draw_Piece(0,5,i);
 }
+//funzioni di gioco
+void toggle_pause(){
+	if(firstStart){
+		Reset_Board();
+    spawn_piece();
+    gameState = GAME_RUNNING;
+    firstStart = 0;
+		GUI_Text(160, 120, (uint8_t *) "         ", COLOR_T, Black);
+		GUI_Text(160, 140, (uint8_t *) "         ", COLOR_T, Black);
+		GUI_Text(160, 140, (uint8_t *) "PLAYING", COLOR_T, Black);
+    return;
+    }
 
+    /* GIOCO IN CORSO ? PAUSA */
+    if (gameState == GAME_RUNNING) {
+			gameState = GAME_PAUSED;
+			GUI_Text(160, 120, (uint8_t *) "        ", COLOR_T, Black);
+			GUI_Text(160, 140, (uint8_t *) "        ", COLOR_T, Black);
+			GUI_Text(160, 140, (uint8_t *) "PAUSED", COLOR_T, Black);
+      return;
+    }
+
+    /* PAUSA ? RIPRENDI */
+    if (gameState == GAME_PAUSED) {
+      gameState = GAME_RUNNING;
+			GUI_Text(160, 120, (uint8_t *) "         ", COLOR_T, Black);
+			GUI_Text(160, 140, (uint8_t *) "         ", COLOR_T, Black);
+			GUI_Text(160, 140, (uint8_t *) "PLAYING", COLOR_T, Black);
+      return;
+    }
+
+    /* GAME OVER ? RESTART */
+    if (gameState == GAME_OVER) {
+				firstStart = 1;
+        Reset_Board();
+        spawn_piece();
+        gameState = GAME_RUNNING;
+    }
+	}
+
+	
 //funzioni di movimento
 
 void tetris_softDrop(void)

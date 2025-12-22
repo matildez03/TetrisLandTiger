@@ -64,8 +64,7 @@ void RIT_IRQHandler (void)
 		switch(J_down){
 			case 1:
 			down_activate =1;
-			tetris_softDrop();
-			spawn_piece();
+			if(gameState == GAME_RUNNING) tetris_softDrop();
 			
 				break;
 			default:
@@ -84,7 +83,7 @@ void RIT_IRQHandler (void)
 		switch(J_left){
 			case 1:
 				left_activate =1;
-			tetris_moveLeft();
+			if(gameState == GAME_RUNNING) tetris_moveLeft();
 			
 				break;
 			default:
@@ -103,7 +102,7 @@ void RIT_IRQHandler (void)
 		switch(J_right){
 			case 1:
 			right_activate =1;
-			tetris_moveRight();
+			if(gameState == GAME_RUNNING) tetris_moveRight();
 			
 				break;
 			default:
@@ -122,7 +121,7 @@ void RIT_IRQHandler (void)
 		switch(J_up){
 			case 1:
 				up_activate =1;
-				tetris_rotate(); 
+				if(gameState == GAME_RUNNING) tetris_rotate(); 
 	
 				break;
 			default:
@@ -155,23 +154,12 @@ void RIT_IRQHandler (void)
 	}
 	
 	//key1
-	if(down_1!=0){ 
-		down_1++;
-		if((LPC_GPIO2->FIOPIN & (1<<11)) == 0){	/* KEY1 pressed */			
-			switch(down_1){
-				case 2:				
-					
-					break;
-				default:
-					break;
-			}
-		}
-		else {	/* button released */
-			down_1=0;			
-			NVIC_EnableIRQ(EINT1_IRQn);							 /* enable Button interrupts			*/
-			LPC_PINCON->PINSEL4    |= (1 << 22);     /* External interrupt 0 pin selection */
-		}
-	}
+	if (down_1 == 1) {
+    toggle_pause();
+    down_1 = 0;
+    NVIC_EnableIRQ(EINT1_IRQn);
+}
+
 	
 	//key2
 	if(down_2 != 0){

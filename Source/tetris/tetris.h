@@ -29,6 +29,7 @@ void Init_Game_Graphics(void);
 void Reset_Board(void);
 void Draw_Block(int r, int c, uint16_t color);
 void spawn_piece(void);
+void toggle_pause();
 
 void tetris_moveLeft(void);
 void tetris_moveRight(void);
