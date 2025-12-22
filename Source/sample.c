@@ -84,32 +84,18 @@ int main(void)
 	// Devono stare DOPO LCD_Initialization ma PRIMA del while(1)
   Init_Game_Graphics();         // Disegna la griglia
  // Reset_Board();                // Pulisce la memoria
-	// --- TEST DI DISEGNO ---
-	// 1. Disegna una "T" (ID 2) in alto a sinistra, Rossa
-// Dovrebbe occupare righe 0-1 e colonne 0-2 (circa)
-	//Draw_Piece(0, 0, 2, Red);
-
-// 2. Disegna una "I" (ID 0) verticale, Verde
-// Mettiamola un po' più giù
-	//Draw_Piece(5, 5, 0, Green);
-
-// 3. Disegna un Cubo "O" (ID 1), Blu
-// In basso a destra
-	//Draw_Piece(15, 6, 1, Blue);
-
+	
 	init_RIT(0x004C4B40);									/* RIT Initialization 50 msec       	*/
 	enable_RIT();
 
-	
 	init_timer(0, 0, 0, 3, 0x017D7840); 	// Timer0 inizializzazione con periodo 1 sec
 	enable_timer(0);
 	
-	spawn_piece();
+	//metto la cpu in power down mode
+	LPC_SC->PCON |= 0x1;      // set PM0 = 1
+	LPC_SC->PCON &= ~(0x2);  // set PM1 = 0
 	
-	
-	LPC_SC->PCON |= 0x1;									/* power-down	mode										*/
-	LPC_SC->PCON &= ~(0x2);
-	
+	//wait for interrupt
   while (1)	
   {
 		__ASM("wfi");

@@ -703,14 +703,14 @@
           <GroupName>tetris</GroupName>
           <Files>
             <File>
-              <FileName>tetris.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\tetris.h</FilePath>
-            </File>
-            <File>
               <FileName>tetris.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\tetris.c</FilePath>
+              <FilePath>.\Source\tetris\tetris.c</FilePath>
+            </File>
+            <File>
+              <FileName>tetris.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\tetris\tetris.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1053,7 +1053,7 @@
               <MiscControls></MiscControls>
               <Define>SIMULATOR</Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source;.\Source\CMSIS_core;.\Source\GLCD;.\Source\timer;.\Source\button_EXINT;.\Source\TouchPanel;.\Source\tetris</IncludePath>
+              <IncludePath>.\Source;.\Source\CMSIS_core;.\Source\GLCD;.\Source\timer;.\Source\button_EXINT;.\Source\TouchPanel;.\Source\tetris;.\Source\tetris</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1364,14 +1364,14 @@
           <GroupName>tetris</GroupName>
           <Files>
             <File>
-              <FileName>tetris.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\tetris.h</FilePath>
-            </File>
-            <File>
               <FileName>tetris.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\tetris.c</FilePath>
+              <FilePath>.\Source\tetris\tetris.c</FilePath>
+            </File>
+            <File>
+              <FileName>tetris.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\tetris\tetris.h</FilePath>
             </File>
           </Files>
         </Group>

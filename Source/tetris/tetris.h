@@ -1,32 +1,39 @@
 #ifndef _TETRIS_H_
 #define _TETRIS_H_
 
-#include <stdint.h> // Serve per capire tipi come uint8_t se usati
+#include <stdint.h>
 
-/* ==============================================
-   DEFINIZIONE DELLE COSTANTI PUBBLICHE
-   ============================================== */
-#define ROWS 20      
-#define COLS 10      
-#define BLOCK_SIZE 15 
+/* Costanti pubbliche */
+#define ROWS 20
+#define COLS 10
+#define BLOCK_SIZE 15
 
-// Colori utili
+/* Colori utili */
 #define Black 0x0000
 #define White 0xFFFF
 #define Red   0xF800
 #define Blue  0x001F
 #define Green 0x07E0
 
-/* ==============================================
-   PROTOTIPI DELLE FUNZIONI (Il "Menu")
-   ============================================== */
+typedef enum {
+    GAME_PAUSED = 0,
+    GAME_RUNNING,
+    GAME_OVER
+} GameState;
 
-// Chiama questa funzione nel main per preparare la grafica
+/* Dichiarazione (non definizione!) */
+extern volatile GameState gameState;
+
+/* Prototipi */
 void Init_Game_Graphics(void);
-// Chiama questa per resettare la logica (matrice vuota)
 void Reset_Board(void);
 void Draw_Block(int r, int c, uint16_t color);
+void spawn_piece(void);
 
-// Aggiungeremo qui altre funzioni man mano (es. Draw_Piece, Game_Step...)
+void tetris_moveLeft(void);
+void tetris_moveRight(void);
+void tetris_rotate(void);
+void tetris_softDrop(void);
+void tetris_gravityStep(void);
 
-#endif
+#endif /* _TETRIS_H_ */

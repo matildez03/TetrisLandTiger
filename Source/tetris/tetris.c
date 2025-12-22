@@ -1,6 +1,6 @@
 #include "LPC17xx.h"
 #include "GLCD.h"   // Libreria per gestire lo schermo
-
+#include "tetris.h"
 /* ==============================================
    1. DEFINIZIONE DELLE COSTANTI
    ============================================== */
@@ -15,6 +15,22 @@
 #define White 0xFFFF
 #define Red   0xF800
 
+#define COLOR_I  0x07FF   // Ciano
+#define COLOR_O  0xFFE0   // Giallo
+#define COLOR_T  0x780F   // Viola
+#define COLOR_J  0x001F   // Blu
+#define COLOR_L  0xFD20   // Arancione
+#define COLOR_S  0x07E0   // Verde
+#define COLOR_Z  0xF800   // Rosso
+
+/* ==============================================
+   2. VARIABILI GLOBALI (LA MEMORIA)
+   ============================================== */
+// Questa è la griglia: 0 = vuoto, 1 = occupato
+// volatile serve a dire al compilatore che questa memoria cambia spesso
+volatile int board[ROWS][COLS]; 
+
+volatile GameState gameState = GAME_PAUSED;
 /* ==============================================
    4. DEFINIZIONE DEI PEZZI (TETRAMINI)
    ============================================== */
@@ -73,12 +89,19 @@ const uint8_t PIECES[7][4][4] = {
     }
 };
 
-/* ==============================================
-   2. VARIABILI GLOBALI (LA MEMORIA)
-   ============================================== */
-// Questa è la griglia: 0 = vuoto, 1 = occupato
-// volatile serve a dire al compilatore che questa memoria cambia spesso
-volatile int board[ROWS][COLS]; 
+const uint16_t PIECE_COLORS[7] = {
+    COLOR_I,
+    COLOR_O,
+    COLOR_T,
+    COLOR_J,
+    COLOR_L,
+    COLOR_S,
+    COLOR_Z
+};
+
+
+
+
 
 /* ==============================================
    3. FUNZIONI DI DISEGNO
@@ -135,3 +158,49 @@ void Draw_Block(int r, int c, uint16_t color) {
         LCD_DrawLine(x0 + 1, y0 + i, x0 + BLOCK_SIZE - 1, y0 + i, color);
     }
 }
+
+/* ==============================================
+   5. DISEGNA UN PEZZO INTERO
+   ============================================== */
+// r, c: Coordinate dell'angolo in alto a sinistra della scatola 4x4
+// piece_id: Quale pezzo disegnare (0-6)
+
+
+void Draw_Piece(int r, int c, int piece_id) {
+    int i, j;
+    
+    // Scorre le 4 righe del pezzo
+    for (i = 0; i < 4; i++) {
+        // Scorre le 4 colonne del pezzo
+        for (j = 0; j < 4; j++) {
+            
+            // Se nella definizione del pezzo c'è un 1...
+            if (PIECES[piece_id][i][j] == 1) {
+                // ...disegna un blocco nella posizione corrispondente
+                // r+i = riga base + riga interna del pezzo
+                // c+j = colonna base + colonna interna del pezzo
+                Draw_Block(r + i, c + j, PIECE_COLORS[piece_id]);
+            }
+        }
+    }
+}
+
+
+void spawn_piece(){
+	int i = LPC_TIM0->TC % 7;
+	Reset_Board();
+	Draw_Piece(0,5,i);
+}
+
+//funzioni di movimento
+
+void tetris_softDrop(void)
+{
+    // per ora anche vuota va bene
+}
+
+
+void tetris_moveLeft(void){}
+void tetris_moveRight(void){}
+void tetris_rotate(void){}
+void tetris_gravityStep(void){}

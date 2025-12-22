@@ -12,6 +12,7 @@
 #include "../led/led.h"
 #include "../timer/timer.h"
 #include "../GLCD/GLCD.h"
+#include "../tetris/tetris.h"
 
 /******************************************************************************
 ** Function name:		RIT_IRQHandler
@@ -22,17 +23,15 @@
 ** Returned value:		None
 **
 ******************************************************************************/
-int right_activate;
-int down_activate;
-int left_activate;
-int up_activate;
-int done;
+volatile uint8_t right_activate;
+volatile uint8_t down_activate;
+volatile uint8_t left_activate;
+volatile uint8_t up_activate;
 
 
 volatile int down_0 = 0;
 volatile int down_1 = 0;
 volatile int down_2 = 0;
-
 extern char led_value;
 
 void RIT_IRQHandler (void)
@@ -61,19 +60,12 @@ void RIT_IRQHandler (void)
 	
 	if((LPC_GPIO1->FIOPIN & (1<<26)) == 0){	
 		/* Joytick J_Down pressed p1.26 --> using J_DOWN due to emulator issues*/
-		
 		J_down++;
 		switch(J_down){
 			case 1:
-				//code here
 			down_activate =1;
-			
-			if (right_activate && down_activate){  // sud est
-			}
-			
-			if( down_activate && left_activate){  // sud ovest
-				//done =1; // duplica il codice anche nell altro medesimo if 
-			}
+			tetris_softDrop();
+			spawn_piece();
 			
 				break;
 			default:
@@ -84,7 +76,6 @@ void RIT_IRQHandler (void)
 			J_down=0;
 			// scrivi  qui se vuoi gestire quando viene rilasciato 
 			down_activate =0;
-			//done =0;
 	}
 	
 	if((LPC_GPIO1->FIOPIN & (1<<27)) == 0){	
@@ -92,17 +83,9 @@ void RIT_IRQHandler (void)
 		J_left++;
 		switch(J_left){
 			case 1:
-				//code here
 				left_activate =1;
+			tetris_moveLeft();
 			
-				if(left_activate && up_activate){  // nord ovest
-				}
-				if( down_activate && left_activate){  // sud ovest
-					//done =1;
-				}
-			
-			
-				
 				break;
 			default:
 				break;
@@ -111,7 +94,6 @@ void RIT_IRQHandler (void)
 	else{
 			J_left=0;
 			left_activate =0;
-		done =0; 
 	}
 	
 	if((LPC_GPIO1->FIOPIN & (1<<28)) == 0){	
@@ -120,13 +102,8 @@ void RIT_IRQHandler (void)
 		J_right++;
 		switch(J_right){
 			case 1:
-				//code here
 			right_activate =1;
-			
-			if(up_activate && right_activate){ 		// nord est
-				}
-			if (right_activate && down_activate){  // sud est
-			}
+			tetris_moveRight();
 			
 				break;
 			default:
@@ -136,7 +113,6 @@ void RIT_IRQHandler (void)
 	else{
 			J_right=0;
 			right_activate =0;
-
 	}
 	
 	if((LPC_GPIO1->FIOPIN & (1<<29)) == 0){	
@@ -145,14 +121,9 @@ void RIT_IRQHandler (void)
 		J_up++;
 		switch(J_up){
 			case 1:
-				//code here
 				up_activate =1;
-				if(left_activate && up_activate){  // nord ovest
-				}
-				if (up_activate && right_activate){ // nord est
-				}
-				
-			
+				tetris_rotate(); 
+	
 				break;
 			default:
 				break;
@@ -183,6 +154,7 @@ void RIT_IRQHandler (void)
 		}
 	}
 	
+	//key1
 	if(down_1!=0){ 
 		down_1++;
 		if((LPC_GPIO2->FIOPIN & (1<<11)) == 0){	/* KEY1 pressed */			
@@ -201,6 +173,7 @@ void RIT_IRQHandler (void)
 		}
 	}
 	
+	//key2
 	if(down_2 != 0){
 		down_2++;	
 		if((LPC_GPIO2->FIOPIN & (1<<12)) == 0){	/* KEY2 pressed */			
