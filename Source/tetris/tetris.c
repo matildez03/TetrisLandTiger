@@ -202,8 +202,8 @@ void toggle_pause(){
     spawn_piece();
     gameState = GAME_RUNNING;
     firstStart = 0;
-		GUI_Text(160, 120, (uint8_t *) "         ", COLOR_T, Black);
-		GUI_Text(160, 140, (uint8_t *) "         ", COLOR_T, Black);
+		GUI_Text(160, 120, (uint8_t *) "          ", COLOR_T, Black);
+		GUI_Text(160, 140, (uint8_t *) "          ", COLOR_T, Black);
 		GUI_Text(160, 140, (uint8_t *) "PLAYING", COLOR_T, Black);
     return;
     }
@@ -211,8 +211,8 @@ void toggle_pause(){
     /* GIOCO IN CORSO ? PAUSA */
     if (gameState == GAME_RUNNING) {
 			gameState = GAME_PAUSED;
-			GUI_Text(160, 120, (uint8_t *) "        ", COLOR_T, Black);
-			GUI_Text(160, 140, (uint8_t *) "        ", COLOR_T, Black);
+			GUI_Text(160, 120, (uint8_t *) "         ", COLOR_T, Black);
+			GUI_Text(160, 140, (uint8_t *) "         ", COLOR_T, Black);
 			GUI_Text(160, 140, (uint8_t *) "PAUSED", COLOR_T, Black);
       return;
     }
@@ -220,8 +220,8 @@ void toggle_pause(){
     /* PAUSA ? RIPRENDI */
     if (gameState == GAME_PAUSED) {
       gameState = GAME_RUNNING;
-			GUI_Text(160, 120, (uint8_t *) "         ", COLOR_T, Black);
-			GUI_Text(160, 140, (uint8_t *) "         ", COLOR_T, Black);
+			GUI_Text(160, 120, (uint8_t *) "          ", COLOR_T, Black);
+			GUI_Text(160, 140, (uint8_t *) "          ", COLOR_T, Black);
 			GUI_Text(160, 140, (uint8_t *) "PLAYING", COLOR_T, Black);
       return;
     }

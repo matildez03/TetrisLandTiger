@@ -154,11 +154,21 @@ void RIT_IRQHandler (void)
 	}
 	
 	//key1
-	if (down_1 == 1) {
-    toggle_pause();
-    down_1 = 0;
-    NVIC_EnableIRQ(EINT1_IRQn);
-}
+	if (down_1 == 1) { // debounce
+    if ((LPC_GPIO2->FIOPIN & (1<<11)) == 0) {
+        toggle_pause();
+        down_1 = 2;              // azione fatta, aspetta release
+    } else {
+        down_1 = 0;
+        NVIC_EnableIRQ(EINT1_IRQn);
+    }	
+	}
+	else if (down_1 == 2) { // wait release
+    if ((LPC_GPIO2->FIOPIN & (1<<11)) != 0) {
+        down_1 = 0;
+        NVIC_EnableIRQ(EINT1_IRQn);
+    }
+	}
 
 	
 	//key2

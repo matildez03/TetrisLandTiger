@@ -7,21 +7,29 @@
  */
 void BUTTON_init(void) {
 
-  LPC_PINCON->PINSEL4    |= (1 << 20);		 /* External interrupt 0 pin selection */
-  LPC_GPIO2->FIODIR      &= ~(1 << 10);    /* PORT2.10 defined as input          */
+  // P2.10 -> EINT0 (01 su bits 20-21)
+  LPC_PINCON->PINSEL4 = (LPC_PINCON->PINSEL4 & ~(3<<20)) | (1<<20);
+  LPC_GPIO2->FIODIR  &= ~(1<<10);
 
-  LPC_PINCON->PINSEL4    |= (1 << 22);     /* External interrupt 0 pin selection */
-  LPC_GPIO2->FIODIR      &= ~(1 << 11);    /* PORT2.11 defined as input          */
-  
-  LPC_PINCON->PINSEL4    |= (1 << 24);     /* External interrupt 0 pin selection */
-  LPC_GPIO2->FIODIR      &= ~(1 << 12);    /* PORT2.12 defined as input          */
+  // P2.11 -> EINT1 (01 su bits 22-23)
+  LPC_PINCON->PINSEL4 = (LPC_PINCON->PINSEL4 & ~(3<<22)) | (1<<22);
+  LPC_GPIO2->FIODIR  &= ~(1<<11);
 
+  // P2.12 -> EINT2 (01 su bits 24-25)
+  LPC_PINCON->PINSEL4 = (LPC_PINCON->PINSEL4 & ~(3<<24)) | (1<<24);
+  LPC_GPIO2->FIODIR  &= ~(1<<12);
+
+  // Pull-up su P2.10, P2.11, P2.12 (00 su PINMODE4)
+  LPC_PINCON->PINMODE4 &= ~((3<<20) | (3<<22) | (3<<24));
+
+  // Edge sensitive
   LPC_SC->EXTMODE = 0x7;
 
-	NVIC_EnableIRQ(EINT0_IRQn);              /* enable irq in nvic                 */
-	//NVIC_SetPriority(EINT0_IRQn, 0);				 /* decreasing priority	from EINT2->0	 */
-  NVIC_EnableIRQ(EINT1_IRQn);              /* enable irq in nvic                 */
-	//NVIC_SetPriority(EINT1_IRQn, 0);				 
-	NVIC_EnableIRQ(EINT2_IRQn);              /* enable irq in nvic                 */
-	//NVIC_SetPriority(EINT2_IRQn, 0);				 /* priority, the lower the better     */
+  // (opzionale ma consigliato) falling edge, perché i tasti sono active-low
+  LPC_SC->EXTPOLAR &= ~0x7;
+
+  NVIC_EnableIRQ(EINT0_IRQn);
+  NVIC_EnableIRQ(EINT1_IRQn);
+  NVIC_EnableIRQ(EINT2_IRQn);
 }
+
