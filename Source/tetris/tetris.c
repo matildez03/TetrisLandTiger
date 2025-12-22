@@ -32,6 +32,8 @@ volatile int board[ROWS][COLS];
 
 volatile GameState gameState = GAME_PAUSED;
 static uint8_t firstStart = 1;
+volatile uint8_t key1_event = 0;
+
 
 /* ==============================================
    4. DEFINIZIONE DEI PEZZI (TETRAMINI)
