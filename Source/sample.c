@@ -100,6 +100,11 @@ int main(void)
 	//wait for interrupt
   while (1)	
   {
+	
+		if (key1_event){
+			key1_event = 0;
+			toggle_pause();
+		}
 		if (gravity_event) {
     gravity_event = 0;
     tetris_gravityStep();
@@ -113,7 +118,7 @@ int main(void)
     LPC_TIM0->TC  = 0;  // reset counter (opzionale ma rende immediato)
     LPC_TIM0->TCR = 1;  // start
 
-    LPC_TIM0->MR0 = softdrop_on ? 0x000F4240 : 0x001E8480; // 0.4s / 0.8s
+    LPC_TIM0->MR0 = softdrop_on ? 0x004C4B40 : 0x001E8480; // 0.2s / 0.8s
 		}	
 		
 	}

@@ -159,7 +159,8 @@ void RIT_IRQHandler (void)
 	if (down_1 != 0) {  // debounce press
 		down_1++;
 		if(down_1 == 2){
-			toggle_pause();
+			//toggle_pause();
+			key1_event = 1;
 			//usa flag per key event e gestiscilo nel main loop richiamando la funzione
 		}
 		
