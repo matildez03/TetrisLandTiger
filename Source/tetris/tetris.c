@@ -23,21 +23,17 @@
 #define COLOR_S  0x07E0   // Verde
 #define COLOR_Z  0xF800   // Rosso
 
-/* ==============================================
-   2. VARIABILI GLOBALI (LA MEMORIA)
-   ============================================== */
+
+
 // Questa è la griglia: 0 = vuoto, 1 = occupato
 // volatile serve a dire al compilatore che questa memoria cambia spesso
 volatile int board[ROWS][COLS]; 
-
 volatile GameState gameState = GAME_PAUSED;
 static uint8_t firstStart = 1;
 volatile uint8_t key1_event = 0;
 
 
-/* ==============================================
-   4. DEFINIZIONE DEI PEZZI (TETRAMINI)
-   ============================================== */
+// TETRAMINI
 // Usiamo uint8_t per risparmiare memoria (basta 1 byte per 0/1)
 // Struttura: [7 pezzi] [4 righe] [4 colonne]
 
@@ -106,21 +102,16 @@ const uint16_t PIECE_COLORS[7] = {
 
 
 
-
-/* ==============================================
-   3. FUNZIONI DI DISEGNO
-   ============================================== */
+ //FUNZIONI DI DISEGNO
 
 // Funzione per inizializzare il gioco
 void Init_Game_Graphics(void) {
-    // 1. Puliamo lo schermo (Sfondo nero)
-    LCD_Clear(Black);
+ 
+    LCD_Clear(Black); // sfondo nero
     
-    // Calcoliamo i limiti del campo per comodità
-    // Larghezza = 10 * 15 = 150 pixel
-    // Altezza   = 20 * 15 = 300 pixel
-    int limit_X = COLS * BLOCK_SIZE; 
-    int limit_Y = ROWS * BLOCK_SIZE;
+    // Calcoliamo i limiti del campo 
+    int limit_X = COLS * BLOCK_SIZE; // Larghezza = 10 * 15 = 150 pixel
+    int limit_Y = ROWS * BLOCK_SIZE; // Altezza   = 20 * 15 = 300 pixel
     
     // 2. Disegniamo il "SECCHIO" usando le linee
     // Sintassi: LCD_DrawLine(x_inizio, y_inizio, x_fine, y_fine, colore)
@@ -165,13 +156,9 @@ void Draw_Block(int r, int c, uint16_t color) {
     }
 }
 
-/* ==============================================
-   5. DISEGNA UN PEZZO INTERO
-   ============================================== */
+// DISEGNA UN PEZZO INTERO
 // r, c: Coordinate dell'angolo in alto a sinistra della scatola 4x4
 // piece_id: Quale pezzo disegnare (0-6)
-
-
 void Draw_Piece(int r, int c, int piece_id) {
     int i, j;
     
@@ -191,12 +178,14 @@ void Draw_Piece(int r, int c, int piece_id) {
     }
 }
 
-
+//mostra un nuovo tetramino
 void spawn_piece(){
 	int i = LPC_TIM0->TC % 7;
 	Reset_Board();
 	Draw_Piece(0,5,i);
 }
+
+
 //funzioni di gioco
 void toggle_pause(){
 	if(firstStart){

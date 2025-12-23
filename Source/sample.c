@@ -85,7 +85,7 @@ int main(void)
   Init_Game_Graphics();         // Disegna la griglia
  // Reset_Board();                // Pulisce la memoria
 	
-	init_RIT(0x004C4B40);									/* RIT Initialization 50 msec       	*/
+	init_RIT(625000);									/* RIT Initialization a 25msc / 50 msec = 0x004C4B40   	*/
 	enable_RIT();
 
 	init_timer(0, 0, 0, 3, 0x017D7840); 	// Timer0 inizializzazione con periodo 1 sec

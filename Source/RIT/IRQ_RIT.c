@@ -156,30 +156,34 @@ void RIT_IRQHandler (void)
 	//key1
 	// KEY1 debounce + wait release (P2.11 active low)
 	
-	if (down_1 != 0) {                 // debounce press
-		if(down_1 == 1){
+	if (down_1 != 0) {  // debounce press
+		down_1++;
+		if(down_1 == 2){
 			toggle_pause();
 			//usa flag per key event e gestiscilo nel main loop richiamando la funzione
 		}
-		down_1++;
+		
     if ((LPC_GPIO2->FIOPIN & (1<<11)) != 0) {   // released
       down_1 = 0;
       NVIC_EnableIRQ(EINT1_IRQn);
       LPC_PINCON->PINSEL4 = (LPC_PINCON->PINSEL4 & ~(3 << 22)) | (1 << 22);
     }
+		LPC_RIT->RICTRL |= 0x1;
 	}
 
 	
 	//key2
 	if(down_2 != 0){
-		if(down_2 == 1){
-			//funzione
-		}
-		down_2++;	
+		down_2++;
+		if(down_2 == 2){
+			// funzione o flag
+		}	
 		if((LPC_GPIO2->FIOPIN & (1<<12)) != 0){	/* KEY2 NOT pressed */			
 			down_2=0;			
 			NVIC_EnableIRQ(EINT2_IRQn);							 /* enable Button interrupts			*/
-			LPC_PINCON->PINSEL4 = (LPC_PINCON->PINSEL4 & ~(3 << 24)) | (1 << 24);		}	
+			LPC_PINCON->PINSEL4 = (LPC_PINCON->PINSEL4 & ~(3 << 24)) | (1 << 24);		
+		}	
+		LPC_RIT->RICTRL |= 0x1;
 	}
 	
 	
