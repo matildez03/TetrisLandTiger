@@ -88,16 +88,41 @@ int main(void)
 	init_RIT(625000);									/* RIT Initialization a 25msc / 50 msec = 0x004C4B40   	*/
 	enable_RIT();
 
-	init_timer(0, 0, 0, 3, 0x017D7840); 	// Timer0 inizializzazione con periodo 1 sec
+	init_timer(0, 0, 0, 3, 0x001E8480); 	// Timer0 inizializzazione con periodo 0,08 sec
 	enable_timer(0);
 	
 	//metto la cpu in power down mode
 	LPC_SC->PCON |= 0x1;      // set PM0 = 1
 	LPC_SC->PCON &= ~(0x2);  // set PM1 = 0
 	
+	static uint8_t last_soft = 0;
+	
 	//wait for interrupt
   while (1)	
   {
+		if (gravity_event) {
+    gravity_event = 0;
+    tetris_gravityStep();
+			
+
+    // soft drop: se attivo, fai un passo extra (2x)
+		if (softdrop_on != last_soft) {
+    last_soft = softdrop_on;
+
+    LPC_TIM0->TCR = 0;  // stop
+    LPC_TIM0->TC  = 0;  // reset counter (opzionale ma rende immediato)
+    LPC_TIM0->TCR = 1;  // start
+
+    LPC_TIM0->MR0 = softdrop_on ? 0x000F4240 : 0x001E8480; // 0.4s / 0.8s
+		}	
+		
+	}
+		
+		if (key2_event) {
+			key2_event = 0;
+			tetris_hardDrop();
+		}
+		
 		__ASM("wfi");
   }
 }

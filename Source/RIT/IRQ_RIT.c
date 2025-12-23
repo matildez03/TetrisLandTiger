@@ -33,6 +33,8 @@ volatile int down_0 = 0;
 volatile int down_1 = 0;
 volatile int down_2 = 0;
 extern char led_value;
+extern volatile uint8_t key2_event;
+extern volatile uint8_t key1_event;
 
 void RIT_IRQHandler (void)
 {					
@@ -61,20 +63,17 @@ void RIT_IRQHandler (void)
 	if((LPC_GPIO1->FIOPIN & (1<<26)) == 0){	
 		/* Joytick J_Down pressed p1.26 --> using J_DOWN due to emulator issues*/
 		J_down++;
-		switch(J_down){
-			case 1:
-			down_activate =1;
-			if(gameState == GAME_RUNNING) tetris_softDrop();
-			
-				break;
-			default:
-				break;
-		}
+		// Qui non usiamo "J_down == 1" perché vogliamo che scenda veloce 
+    // finché teniamo premuto il joystick
+    if(J_down % 2 == 0) { // Regola la velocità del drop (ogni 2 cicli RIT)
+       if(gameState == GAME_RUNNING) //tetris_gravityStep();
+				 softdrop_on = 1;
+    }
 	}
 	else{
-			J_down=0;
-			// scrivi  qui se vuoi gestire quando viene rilasciato 
-			down_activate =0;
+		J_down=0;
+		down_activate =0;
+		softdrop_on = 0;
 	}
 	
 	if((LPC_GPIO1->FIOPIN & (1<<27)) == 0){	
@@ -140,7 +139,7 @@ void RIT_IRQHandler (void)
 		if((LPC_GPIO2->FIOPIN & (1<<10)) == 0){	/* INT0 pressed */			
 			switch(down_0){
 				case 2:				
-					//code here
+				
 					break;
 				default:
 					break;
@@ -151,6 +150,7 @@ void RIT_IRQHandler (void)
 			NVIC_EnableIRQ(EINT0_IRQn);							 /* enable Button interrupts			*/
 			LPC_PINCON->PINSEL4    |= (1 << 20);     /* External interrupt 0 pin selection */
 		}
+		LPC_RIT->RICTRL |= 0x1;
 	}
 	
 	//key1
@@ -172,11 +172,11 @@ void RIT_IRQHandler (void)
 	}
 
 	
-	//key2
+	//key2: hard drop
 	if(down_2 != 0){
 		down_2++;
 		if(down_2 == 2){
-			// funzione o flag
+			key2_event = 1;
 		}	
 		if((LPC_GPIO2->FIOPIN & (1<<12)) != 0){	/* KEY2 NOT pressed */			
 			down_2=0;			

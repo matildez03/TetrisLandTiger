@@ -21,37 +21,14 @@
 **
 ******************************************************************************/
 extern unsigned char led_value;					/* defined in funct_led								*/
-void TIMER0_IRQHandler (void)
-{
+extern volatile uint8_t gravity_event;
 
-	/* Match register 0 interrupt service routine */
-	if (LPC_TIM0->IR & 01)
-	{
-		
-		LPC_TIM0->IR = 1;			/* clear interrupt flag */
-	}
-		/* Match register 1 interrupt service routine */
-	  /* it should be possible to access to both interrupt requests in the same procedure*/
-	if(LPC_TIM0->IR & 02)
-  {
-	
-		LPC_TIM0->IR =  2 ;			/* clear interrupt flag */	
-	}
-	/* Match register 2 interrupt service routine */
-  /* it should be possible to access to both interrupt requests in the same procedure*/
-	if(LPC_TIM0->IR & 4)
-  {
-		
-		LPC_TIM0->IR =  4 ;			/* clear interrupt flag */	
-	}
-		/* Match register 3 interrupt service routine */
-  	/* it should be possible to access to both interrupt requests in the same procedure*/
-	if(LPC_TIM0->IR & 8)
-  {
-	 
-		LPC_TIM0->IR =  8 ;			/* clear interrupt flag */	
-	}
-  return;
+void TIMER0_IRQHandler(void)
+{
+    if (LPC_TIM0->IR & (1<<0)) {     // MR0 match
+        gravity_event = 1;          // evento (lo consumerà il main)
+        LPC_TIM0->IR = (1<<0);      // clear MR0 flag
+    }
 }
 
 

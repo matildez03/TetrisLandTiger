@@ -7,7 +7,6 @@
 // Il campo è 20 righe x 10 colonne
 #define ROWS 20      
 #define COLS 10      
-
 #define BLOCK_SIZE 15
 
 // Colori 
@@ -30,7 +29,21 @@
 volatile int board[ROWS][COLS]; 
 volatile GameState gameState = GAME_PAUSED;
 static uint8_t firstStart = 1;
-volatile uint8_t key1_event = 0;
+// ======= Stato del pezzo corrente =======
+static int cur_id  = 0;   // 0..6
+static int cur_r   = 0;   // riga top-left della 4x4
+static int cur_c   = 3;   // colonna top-left (3 -> centrato circa)
+static int cur_rot = 0;   // 0..3
+
+// Evento caduta (settato dal timer, consumato nel main)
+volatile uint8_t gravity_event = 0;
+
+// Soft drop flag (settato da joystick down)
+volatile uint8_t softdrop_on = 0;
+volatile uint8_t key2_event  = 0;
+volatile uint8_t key1_event  = 0;
+
+
 
 
 // TETRAMINI
@@ -98,8 +111,6 @@ const uint16_t PIECE_COLORS[7] = {
     COLOR_S,
     COLOR_Z
 };
-
-
 
 
  //FUNZIONI DI DISEGNO
@@ -179,11 +190,23 @@ void Draw_Piece(int r, int c, int piece_id) {
 }
 
 //mostra un nuovo tetramino
-void spawn_piece(){
-	int i = LPC_TIM0->TC % 7;
-	Reset_Board();
-	Draw_Piece(0,5,i);
+void spawn_piece(void)
+{
+    cur_id  = LPC_TIM0->TC % 7;
+    cur_rot = 0;
+    cur_r   = -1;     // leggermente “sopra” per spawn naturale
+    cur_c   = 3;
+
+    // lose condition: se non posso piazzarlo già all'inizio
+    if (!can_place(cur_r, cur_c, cur_id, cur_rot)) {
+        gameState = GAME_OVER;
+        GUI_Text(160, 140, (uint8_t *) "GAME OVER", Red, Black);
+        return;
+    }
+
+    draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
 }
+
 
 
 //funzioni di gioco
@@ -228,14 +251,228 @@ void toggle_pause(){
 
 	
 //funzioni di movimento
+	
+	static uint8_t piece_cell(int id, int rot, int i, int j)
+{
+    switch (rot & 3) {
+        case 0: return PIECES[id][i][j];
+        case 1: return PIECES[id][3 - j][i];
+        case 2: return PIECES[id][3 - i][3 - j];
+        default:return PIECES[id][j][3 - i];
+    }
+}
+
+	
+	static int can_place(int r0, int c0, int id, int rot){
+		int i = 0;
+		int j = 0;
+    for (i=0; i<4; i++) {
+        for (j=0; j<4; j++) {
+            if (piece_cell(id, rot, i, j)) {
+                int r = r0 + i;
+                int c = c0 + j;
+
+                // fuori dal campo
+                if (c < 0 || c >= COLS) return 0;
+                if (r >= ROWS) return 0;
+
+                // sopra il bordo top: consentito (spawn), ma non checkare board[-1]
+                if (r >= 0) {
+                    if (board[r][c] != 0) return 0;
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+static void draw_piece_at(int r0, int c0, int id, int rot, uint16_t color){
+    int i = 0;
+		int j = 0;
+    for (i=0; i<4; i++) {
+        for (j=0; j<4; j++) {
+            if (piece_cell(id, rot, i, j)) {
+                int r = r0 + i;
+                int c = c0 + j;
+                if (r >= 0) Draw_Block(r, c, color);
+            }
+        }
+    }
+}
+
+static void erase_piece_at(int r0, int c0, int id, int rot)
+{
+    draw_piece_at(r0, c0, id, rot, Black);
+}
+
+static void lock_piece(void){
+    int i = 0;
+		int j = 0;
+    for (i=0; i<4; i++) {
+        for (j=0; j<4; j++) {
+            if (piece_cell(cur_id, cur_rot, i, j)) {
+                int r = cur_r + i;
+                int c = cur_c + j;
+                if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+                    board[r][c] = cur_id + 1; // salva tipo (1..7)
+                }
+            }
+        }
+    }
+}
+
+static void redraw_board(void) {
+    // pulisci area gioco (solo interno, non il bordo)
+		int r = 0;
+		int c = 0;
+    for (r=0; r<ROWS; r++) {
+        for (c=0; c<COLS; c++) {
+            Draw_Block(r, c, Black);
+        }
+    }
+
+    // ridisegna blocchi fissi
+    for (r=0; r<ROWS; r++) {
+        for (c=0; c<COLS; c++) {
+            if (board[r][c] != 0) {
+                int id = board[r][c] - 1;
+                Draw_Block(r, c, PIECE_COLORS[id]);
+            }
+        }
+    }
+}
+
+void tetris_moveLeft(void)
+{
+    if (gameState != GAME_RUNNING) return;
+
+    if (can_place(cur_r, cur_c - 1, cur_id, cur_rot)) {
+        erase_piece_at(cur_r, cur_c, cur_id, cur_rot);
+        cur_c--;
+        draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
+    }
+}
+
+void tetris_moveRight(void)
+{
+    if (gameState != GAME_RUNNING) return;
+
+    if (can_place(cur_r, cur_c + 1, cur_id, cur_rot)) {
+        erase_piece_at(cur_r, cur_c, cur_id, cur_rot);
+        cur_c++;
+        draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
+    }
+}
+
+void tetris_rotate(void)
+{
+    if (gameState != GAME_RUNNING) return;
+
+    int new_rot = (cur_rot + 1) & 3;
+
+    // semplice wall-kick minimo: prova in posto, poi sposta di 1 a sx o dx
+    if (can_place(cur_r, cur_c, cur_id, new_rot) ||
+        can_place(cur_r, cur_c - 1, cur_id, new_rot) ||
+        can_place(cur_r, cur_c + 1, cur_id, new_rot)) {
+
+        erase_piece_at(cur_r, cur_c, cur_id, cur_rot);
+
+        if (!can_place(cur_r, cur_c, cur_id, new_rot)) {
+            if (can_place(cur_r, cur_c - 1, cur_id, new_rot)) cur_c--;
+            else if (can_place(cur_r, cur_c + 1, cur_id, new_rot)) cur_c++;
+        }
+
+        cur_rot = new_rot;
+        draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
+    }
+}
+
+void tetris_gravityStep(void)
+{
+    if (gameState != GAME_RUNNING) return;
+
+    if (can_place(cur_r + 1, cur_c, cur_id, cur_rot)) {
+        erase_piece_at(cur_r, cur_c, cur_id, cur_rot);
+        cur_r++;
+        draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
+    } else {
+        // si ferma: diventa blocco fisso
+        lock_piece();
+        clear_lines();
+        spawn_piece();
+    }
+}
 
 void tetris_softDrop(void)
 {
-    // per ora anche vuota va bene
+    // chiamala nel main ogni ciclo (o nel RIT) quando softdrop_on=1
+    if (softdrop_on) {
+        tetris_gravityStep(); // un passo extra
+    }
+}
+
+void tetris_hardDrop(void)
+{
+    if (gameState != GAME_RUNNING) return;
+
+    // Cancella il pezzo dalla vecchia posizione (grafica)
+    erase_piece_at(cur_r, cur_c, cur_id, cur_rot);
+
+    // Scendi finché puoi
+    while (can_place(cur_r + 1, cur_c, cur_id, cur_rot)) {
+        cur_r++;
+    }
+
+    // Disegna nella posizione finale
+    draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
+
+    // Diventa blocco fisso
+    lock_piece();
+
+    // lear_lines)
+
+    // Nuovo pezzo
+    spawn_piece();
+}
+
+void clear_lines(void)
+{
+    int r, c;
+    int full;
+    int write_r = ROWS - 1;   // riga dove scrivere (dal basso)
+
+    // scorri dal basso verso l’alto
+    for (r = ROWS - 1; r >= 0; r--) {
+
+        full = 1;
+        for (c = 0; c < COLS; c++) {
+            if (board[r][c] == 0) {
+                full = 0;
+                break;
+            }
+        }
+
+        if (!full) {
+            // copia la riga r nella posizione write_r
+            if (write_r != r) {
+                for (c = 0; c < COLS; c++) {
+                    board[write_r][c] = board[r][c];
+                }
+            }
+            write_r--;
+        }
+        // se full==1 ? la riga viene scartata (cancellata)
+    }
+
+    // pulisci le righe rimaste in alto
+    for (r = write_r; r >= 0; r--) {
+        for (c = 0; c < COLS; c++) {
+            board[r][c] = 0;
+        }
+    }
+
+    // ridisegna il campo aggiornato
+    redraw_board();
 }
 
 
-void tetris_moveLeft(void){}
-void tetris_moveRight(void){}
-void tetris_rotate(void){}
-void tetris_gravityStep(void){}

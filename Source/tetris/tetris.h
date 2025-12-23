@@ -21,6 +21,15 @@ typedef enum {
     GAME_OVER
 } GameState;
 
+//flags eventi
+
+// ===== Flag eventi =====
+extern volatile uint8_t gravity_event;
+extern volatile uint8_t softdrop_on;
+extern volatile uint8_t harddrop_on;
+extern volatile uint8_t key1_event;
+extern volatile uint8_t key2_event;
+
 /* Dichiarazione (non definizione!) */
 extern volatile GameState gameState;
 
@@ -30,11 +39,15 @@ void Reset_Board(void);
 void Draw_Block(int r, int c, uint16_t color);
 void spawn_piece(void);
 void toggle_pause();
-
+static int can_place(int r0, int c0, int id, int rot);
+static void draw_piece_at(int r0, int c0, int id, int rot, uint16_t color);
 void tetris_moveLeft(void);
 void tetris_moveRight(void);
 void tetris_rotate(void);
 void tetris_softDrop(void);
+void tetris_hardDrop(void);
 void tetris_gravityStep(void);
+void clear_lines(void);
+
 
 #endif /* _TETRIS_H_ */
