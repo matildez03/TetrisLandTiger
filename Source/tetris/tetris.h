@@ -47,7 +47,7 @@ void tetris_rotate(void);
 void tetris_softDrop(void);
 void tetris_hardDrop(void);
 void tetris_gravityStep(void);
-void clear_lines(void);
+int clear_lines(void);
 
 
 #endif /* _TETRIS_H_ */

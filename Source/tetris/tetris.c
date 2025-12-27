@@ -42,6 +42,8 @@ volatile uint8_t gravity_event = 0;
 volatile uint8_t softdrop_on = 0;
 volatile uint8_t key2_event  = 0;
 volatile uint8_t key1_event  = 0;
+volatile int last_cleared = 0; //definita qui per essere visibile nella watch in debug
+
 
 
 
@@ -194,7 +196,7 @@ void spawn_piece(void)
 {
     cur_id  = LPC_TIM0->TC % 7;
     cur_rot = 0;
-    cur_r   = -1;     // leggermente “sopra” per spawn naturale
+    cur_r   = 0;     
     cur_c   = 3;
 
     // lose condition: se non posso piazzarlo già all'inizio
@@ -274,7 +276,10 @@ void toggle_pause(){
 
                 // fuori dal campo
                 if (c < 0 || c >= COLS) return 0;
-                if (r >= ROWS) return 0;
+                if (r >= ROWS) {
+									GUI_Text(160, 220, (uint8_t*)"BOTTOM", Red, Black);
+									return 0;
+								}
 
                 // sopra il bordo top: consentito (spawn), ma non checkare board[-1]
                 if (r >= 0) {
@@ -396,11 +401,16 @@ void tetris_gravityStep(void)
         cur_r++;
         draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
     } else {
-        // si ferma: diventa blocco fisso
-        lock_piece();
-        clear_lines();
-        spawn_piece();
+			GUI_Text(160, 220, (uint8_t*)"LOCK ", White, Black);
+			lock_piece();
+			last_cleared = clear_lines();
+			GUI_Text(160, 240, (uint8_t*)"CLRD", White, Black);
+			if (last_cleared > 0) {
+        redraw_board();   // necessario per vedere lo shift
     }
+    spawn_piece();
+}
+
 }
 
 void tetris_softDrop(void)
@@ -435,25 +445,24 @@ void tetris_hardDrop(void)
     spawn_piece();
 }
 
-void clear_lines(void)
+// ricalcola la nuova board e conta il numero di righe da cancellare
+// se è >0, la board viene sovrascritta 
+int clear_lines(void)
 {
+	GUI_Text(160, 220, (uint8_t*)"CLEAR LINES", Red, White);
     int r, c;
-    int full;
-    int write_r = ROWS - 1;   // riga dove scrivere (dal basso)
+    int write_r = ROWS - 1;
+    int cleared = 0;
 
-    // scorri dal basso verso l’alto
     for (r = ROWS - 1; r >= 0; r--) {
-
-        full = 1;
+        int full = 1;
         for (c = 0; c < COLS; c++) {
-            if (board[r][c] == 0) {
-                full = 0;
-                break;
-            }
+            if (board[r][c] == 0) { full = 0; break; }
         }
 
-        if (!full) {
-            // copia la riga r nella posizione write_r
+        if (full) {
+            cleared++;
+        } else {
             if (write_r != r) {
                 for (c = 0; c < COLS; c++) {
                     board[write_r][c] = board[r][c];
@@ -461,18 +470,14 @@ void clear_lines(void)
             }
             write_r--;
         }
-        // se full==1 ? la riga viene scartata (cancellata)
     }
 
-    // pulisci le righe rimaste in alto
     for (r = write_r; r >= 0; r--) {
-        for (c = 0; c < COLS; c++) {
-            board[r][c] = 0;
-        }
+        for (c = 0; c < COLS; c++) board[r][c] = 0;
     }
 
-    // ridisegna il campo aggiornato
-    redraw_board();
+    return cleared;
 }
+
 
 

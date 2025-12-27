@@ -105,23 +105,24 @@ int main(void)
 			key1_event = 0;
 			toggle_pause();
 		}
-		if (gravity_event) {
-    gravity_event = 0;
+		if (gravity_event == 1) {
+    
     tetris_gravityStep();
-			
+		gravity_event = 0;
+		}
 
     // soft drop: se attivo, fai un passo extra (2x)
 		if (softdrop_on != last_soft) {
     last_soft = softdrop_on;
-
+		
     LPC_TIM0->TCR = 0;  // stop
     LPC_TIM0->TC  = 0;  // reset counter (opzionale ma rende immediato)
     LPC_TIM0->TCR = 1;  // start
 
-    LPC_TIM0->MR0 = softdrop_on ? 0x004C4B40 : 0x001E8480; // 0.2s / 0.8s
+    LPC_TIM0->MR0 = softdrop_on ? 0x0007A120 : 0x001E8480; // 0.02s / 0.08s
 		}	
 		
-	}
+	
 		
 		if (key2_event) {
 			key2_event = 0;
