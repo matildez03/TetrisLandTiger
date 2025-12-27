@@ -43,6 +43,8 @@ volatile uint8_t softdrop_on = 0;
 volatile uint8_t key2_event  = 0;
 volatile uint8_t key1_event  = 0;
 volatile int last_cleared = 0; //definita qui per essere visibile nella watch in debug
+volatile uint32_t else_hits = 0; //per debug
+
 
 
 
@@ -401,6 +403,7 @@ void tetris_gravityStep(void)
         cur_r++;
         draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
     } else {
+			else_hits++;
 			GUI_Text(160, 220, (uint8_t*)"LOCK ", White, Black);
 			lock_piece();
 			last_cleared = clear_lines();
@@ -439,7 +442,7 @@ void tetris_hardDrop(void)
     // Diventa blocco fisso
     lock_piece();
 
-    // lear_lines)
+    clear_lines();
 
     // Nuovo pezzo
     spawn_piece();
