@@ -45,6 +45,13 @@ volatile uint8_t key1_event  = 0;
 volatile int last_cleared = 0; //definita qui per essere visibile nella watch in debug
 
 
+static uint16_t rng = 0xACE1u;
+
+static uint8_t rand7(void)
+{
+    rng = (rng >> 1) ^ (-(rng & 1u) & 0xB400u);
+    return (uint8_t)(rng % 7);
+}
 
 
 
@@ -196,7 +203,7 @@ void Draw_Piece(int r, int c, int piece_id) {
 void spawn_piece(void)
 {
 	LPC_TIM0->TC = 0;
-  cur_id  = LPC_TIM0->TC % 7;
+  cur_id  = rand7();
   cur_rot = 0;
 	cur_r   = -1;     
   cur_c   = 3;
