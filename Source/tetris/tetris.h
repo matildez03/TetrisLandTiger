@@ -39,6 +39,7 @@ void Reset_Board(void);
 void Draw_Block(int r, int c, uint16_t color);
 void spawn_piece(void);
 void toggle_pause();
+static void redraw_board(void);
 static int can_place(int r0, int c0, int id, int rot);
 static void draw_piece_at(int r0, int c0, int id, int rot, uint16_t color);
 void tetris_moveLeft(void);

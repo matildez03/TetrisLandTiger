@@ -43,7 +43,6 @@ volatile uint8_t softdrop_on = 0;
 volatile uint8_t key2_event  = 0;
 volatile uint8_t key1_event  = 0;
 volatile int last_cleared = 0; //definita qui per essere visibile nella watch in debug
-volatile uint32_t else_hits = 0; //per debug
 
 
 
@@ -196,17 +195,18 @@ void Draw_Piece(int r, int c, int piece_id) {
 //mostra un nuovo tetramino
 void spawn_piece(void)
 {
-    cur_id  = LPC_TIM0->TC % 7;
-    cur_rot = 0;
-    cur_r   = 0;     
-    cur_c   = 3;
+	LPC_TIM0->TC = 0;
+  cur_id  = LPC_TIM0->TC % 7;
+  cur_rot = 0;
+	cur_r   = -1;     
+  cur_c   = 3;
 
-    // lose condition: se non posso piazzarlo già all'inizio
-    if (!can_place(cur_r, cur_c, cur_id, cur_rot)) {
-        gameState = GAME_OVER;
-        GUI_Text(160, 140, (uint8_t *) "GAME OVER", Red, Black);
-        return;
-    }
+  // lose condition: se non posso piazzarlo già all'inizio
+  if (!can_place(cur_r, cur_c, cur_id, cur_rot)) {
+		gameState = GAME_OVER;
+    GUI_Text(160, 140, (uint8_t *) "GAME OVER", Red, Black);
+    return;
+  }
 
     draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
 }
@@ -215,8 +215,11 @@ void spawn_piece(void)
 
 //funzioni di gioco
 void toggle_pause(){
-	if(firstStart){
-		Reset_Board();
+	if(firstStart || gameState == GAME_OVER){
+		if(gameState == GAME_OVER){
+			Reset_Board();
+			redraw_board();
+		}
     spawn_piece();
     gameState = GAME_RUNNING;
     firstStart = 0;
@@ -244,13 +247,15 @@ void toggle_pause(){
       return;
     }
 
-    /* GAME OVER ? RESTART */
+    /* GAME OVER ? RESTART 
     if (gameState == GAME_OVER) {
 				firstStart = 1;
         Reset_Board();
+				redraw_board();
         spawn_piece();
         gameState = GAME_RUNNING;
     }
+		*/
 	}
 
 	
@@ -279,7 +284,6 @@ void toggle_pause(){
                 // fuori dal campo
                 if (c < 0 || c >= COLS) return 0;
                 if (r >= ROWS) {
-									GUI_Text(160, 220, (uint8_t*)"BOTTOM", Red, Black);
 									return 0;
 								}
 
@@ -349,9 +353,9 @@ static void redraw_board(void) {
     }
 }
 
-void tetris_moveLeft(void)
-{
-    if (gameState != GAME_RUNNING) return;
+void tetris_moveLeft(void){
+  if (gameState != GAME_RUNNING) return;
+		LPC_TIM0->TC = 0;
 
     if (can_place(cur_r, cur_c - 1, cur_id, cur_rot)) {
         erase_piece_at(cur_r, cur_c, cur_id, cur_rot);
@@ -362,22 +366,22 @@ void tetris_moveLeft(void)
 
 void tetris_moveRight(void)
 {
-    if (gameState != GAME_RUNNING) return;
-
-    if (can_place(cur_r, cur_c + 1, cur_id, cur_rot)) {
-        erase_piece_at(cur_r, cur_c, cur_id, cur_rot);
-        cur_c++;
-        draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
-    }
+  if (gameState != GAME_RUNNING) return;
+	LPC_TIM0->TC = 0;
+	
+  if (can_place(cur_r, cur_c + 1, cur_id, cur_rot)) {
+		erase_piece_at(cur_r, cur_c, cur_id, cur_rot);
+    cur_c++;
+    draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
+  }
 }
 
-void tetris_rotate(void)
-{
-    if (gameState != GAME_RUNNING) return;
+void tetris_rotate(void){
+  if (gameState != GAME_RUNNING) return;
+	LPC_TIM0->TC = 0;
+  int new_rot = (cur_rot + 1) & 3;
 
-    int new_rot = (cur_rot + 1) & 3;
-
-    // semplice wall-kick minimo: prova in posto, poi sposta di 1 a sx o dx
+   // semplice wall-kick minimo: prova in posto, poi sposta di 1 a sx o dx
     if (can_place(cur_r, cur_c, cur_id, new_rot) ||
         can_place(cur_r, cur_c - 1, cur_id, new_rot) ||
         can_place(cur_r, cur_c + 1, cur_id, new_rot)) {
@@ -403,11 +407,8 @@ void tetris_gravityStep(void)
         cur_r++;
         draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
     } else {
-			else_hits++;
-			GUI_Text(160, 220, (uint8_t*)"LOCK ", White, Black);
 			lock_piece();
 			last_cleared = clear_lines();
-			GUI_Text(160, 240, (uint8_t*)"CLRD", White, Black);
 			if (last_cleared > 0) {
         redraw_board();   // necessario per vedere lo shift
     }
@@ -452,7 +453,6 @@ void tetris_hardDrop(void)
 // se è >0, la board viene sovrascritta 
 int clear_lines(void)
 {
-	GUI_Text(160, 220, (uint8_t*)"CLEAR LINES", Red, White);
     int r, c;
     int write_r = ROWS - 1;
     int cleared = 0;

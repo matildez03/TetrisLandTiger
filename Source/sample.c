@@ -106,7 +106,6 @@ int main(void)
 			toggle_pause();
 		}
 		if (gravity_event == 1) {
-    
     tetris_gravityStep();
 		gravity_event = 0;
 		}
