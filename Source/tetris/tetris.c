@@ -1,6 +1,8 @@
 #include "LPC17xx.h"
 #include "GLCD.h"   // Libreria per gestire lo schermo
 #include "tetris.h"
+#include <stdio.h>
+
 /* ==============================================
    1. DEFINIZIONE DELLE COSTANTI
    ============================================== */
@@ -29,6 +31,9 @@
 volatile int board[ROWS][COLS]; 
 volatile GameState gameState = GAME_PAUSED;
 static uint8_t firstStart = 1;
+volatile uint32_t score = 0;
+volatile uint32_t high_score = 0;
+
 // ======= Stato del pezzo corrente =======
 static int cur_id  = 0;   // 0..6
 static int cur_r   = 0;   // riga top-left della 4x4
@@ -124,6 +129,20 @@ const uint16_t PIECE_COLORS[7] = {
 
 
  //FUNZIONI DI DISEGNO
+static void update_score(void)
+{
+  char buf[16];
+
+  // pulisco la riga (spazi) per evitare residui di cifre vecchie
+  GUI_Text(160, 80, (uint8_t *)"        ", Black, Black);
+	GUI_Text(160, 100, (uint8_t *)"        ", Black, Black);
+
+  sprintf(buf, "%lu", (unsigned long)score);
+  GUI_Text(160, 80, (uint8_t *)buf, Red, Black);
+	
+	sprintf(buf, "%lu", (unsigned long)high_score);
+  GUI_Text(160, 120, (uint8_t *)buf, Red, Black);
+}
 
 // Funzione per inizializzare il gioco
 void Init_Game_Graphics(void) {
@@ -147,11 +166,13 @@ void Init_Game_Graphics(void) {
     LCD_DrawLine(0, limit_Y, limit_X, limit_Y, White);
 
     // 3. Scriviamo il testo laterale
-    GUI_Text(160, 20, (uint8_t *) "TETRIS", White, Black);
+    GUI_Text(160, 20, (uint8_t *) "TETRIS", White, Red);
     GUI_Text(160, 60, (uint8_t *) "Score:", White, Black);
     GUI_Text(160, 80, (uint8_t *) "0", Red, Black);
-		GUI_Text(160, 120, (uint8_t *) "Press key1", COLOR_T, Black);
-		GUI_Text(160, 140, (uint8_t *) "to start", COLOR_T, Black);
+		GUI_Text(160, 100, (uint8_t *)"Highest:", White, Black);
+    GUI_Text(160, 120, (uint8_t *) "0", Red, Black);
+		GUI_Text(30, 180, (uint8_t *) " Press key1 ", White, Red);
+		GUI_Text(30, 200, (uint8_t *) " to start ", White, Red);
 }
 
 // Funzione per resettare la matrice a zero
@@ -226,11 +247,20 @@ void toggle_pause(){
 		if(gameState == GAME_OVER){
 			Reset_Board();
 			redraw_board();
+			if(score > high_score){
+				high_score = score;
+			}
+			score = 0;
+			update_score();
+		}
+		if(firstStart){
+			// cancello l'avviso press k1 to start
+			GUI_Text(30, 180, (uint8_t *) "            ", Black, Black);
+			GUI_Text(30, 200, (uint8_t *) "           ", Black, Black);
 		}
     spawn_piece();
     gameState = GAME_RUNNING;
     firstStart = 0;
-		GUI_Text(160, 120, (uint8_t *) "          ", COLOR_T, Black);
 		GUI_Text(160, 140, (uint8_t *) "          ", COLOR_T, Black);
 		GUI_Text(160, 140, (uint8_t *) "PLAYING", COLOR_T, Black);
     return;
@@ -418,6 +448,8 @@ void tetris_gravityStep(void)
 			last_cleared = clear_lines();
 			if (last_cleared > 0) {
         redraw_board();   // necessario per vedere lo shift
+				score++;
+				update_score();
     }
     spawn_piece();
 }
