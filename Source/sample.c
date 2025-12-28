@@ -90,6 +90,8 @@ int main(void)
 
 	init_timer(0, 0, 0, 3, 0x001E8480); 	// Timer0 inizializzazione con periodo 0,08 sec
 	enable_timer(0);
+	init_timer(1, 0, 0, 3, 0x001E8480); 	// Timer0 inizializzazione con periodo 0,08 sec
+	enable_timer(1);
 	
 	//metto la cpu in power down mode
 	LPC_SC->PCON |= 0x1;      // set PM0 = 1

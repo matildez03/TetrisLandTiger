@@ -50,10 +50,11 @@ volatile uint8_t key1_event  = 0;
 volatile int last_cleared = 0; //definita qui per essere visibile nella watch in debug
 volatile uint8_t score_dirty = 0;
 
-static uint16_t rng = 0xACE1u;
+static uint16_t rng;
 
 static uint8_t rand7(void)
 {
+		uint32_t t = LPC_TIM1->TC;
     rng = (rng >> 1) ^ (-(rng & 1u) & 0xB400u);
     return (uint8_t)(rng % 7);
 }
@@ -486,7 +487,10 @@ void tetris_hardDrop(void)
     int n = clear_lines();
 		if(n>0) {
 			redraw_board();
-			score = score * 1;
+			score = score + 1;
+			if(score > high_score){
+				high_score = score;
+			}
 			score_dirty = 1;
 		}
 		
