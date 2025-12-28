@@ -29,6 +29,8 @@ extern volatile uint8_t softdrop_on;
 extern volatile uint8_t harddrop_on;
 extern volatile uint8_t key1_event;
 extern volatile uint8_t key2_event;
+extern volatile uint8_t score_dirty;
+
 
 /* Dichiarazione (non definizione!) */
 extern volatile GameState gameState;
@@ -49,6 +51,7 @@ void tetris_softDrop(void);
 void tetris_hardDrop(void);
 void tetris_gravityStep(void);
 int clear_lines(void);
+void update_score();
 
 
 #endif /* _TETRIS_H_ */

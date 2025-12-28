@@ -119,7 +119,12 @@ int main(void)
     LPC_TIM0->TCR = 1;  // start
 
     LPC_TIM0->MR0 = softdrop_on ? 0x0007A120 : 0x001E8480; // 0.02s / 0.08s
-		}	
+		}
+
+		if(score_dirty){
+			score_dirty = 0;
+			update_score();
+		}
 		
 	
 		

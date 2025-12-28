@@ -48,7 +48,7 @@ volatile uint8_t softdrop_on = 0;
 volatile uint8_t key2_event  = 0;
 volatile uint8_t key1_event  = 0;
 volatile int last_cleared = 0; //definita qui per essere visibile nella watch in debug
-
+volatile uint8_t score_dirty = 0;
 
 static uint16_t rng = 0xACE1u;
 
@@ -129,7 +129,7 @@ const uint16_t PIECE_COLORS[7] = {
 
 
  //FUNZIONI DI DISEGNO
-static void update_score(void)
+void update_score(void)
 {
   char buf[16];
 
@@ -251,7 +251,7 @@ void toggle_pause(){
 				high_score = score;
 			}
 			score = 0;
-			update_score();
+			score_dirty = 1;
 		}
 		if(firstStart){
 			// cancello l'avviso press k1 to start
@@ -447,7 +447,10 @@ void tetris_gravityStep(void)
 			if (last_cleared > 0) {
         redraw_board();   // necessario per vedere lo shift
 				score++;
-				update_score();
+				if(score > high_score){
+					high_score = score;
+				}
+				score_dirty = 1;
     }
     spawn_piece();
 }
