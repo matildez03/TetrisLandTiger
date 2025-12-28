@@ -135,7 +135,7 @@ static void update_score(void)
 
   // pulisco la riga (spazi) per evitare residui di cifre vecchie
   GUI_Text(160, 80, (uint8_t *)"        ", Black, Black);
-	GUI_Text(160, 100, (uint8_t *)"        ", Black, Black);
+	GUI_Text(160, 120, (uint8_t *)"        ", Black, Black);
 
   sprintf(buf, "%lu", (unsigned long)score);
   GUI_Text(160, 80, (uint8_t *)buf, Red, Black);
@@ -269,7 +269,6 @@ void toggle_pause(){
     /* GIOCO IN CORSO ? PAUSA */
     if (gameState == GAME_RUNNING) {
 			gameState = GAME_PAUSED;
-			GUI_Text(160, 120, (uint8_t *) "         ", COLOR_T, Black);
 			GUI_Text(160, 140, (uint8_t *) "         ", COLOR_T, Black);
 			GUI_Text(160, 140, (uint8_t *) "PAUSED", COLOR_T, Black);
       return;
@@ -278,7 +277,6 @@ void toggle_pause(){
     /* PAUSA ? RIPRENDI */
     if (gameState == GAME_PAUSED) {
       gameState = GAME_RUNNING;
-			GUI_Text(160, 120, (uint8_t *) "          ", COLOR_T, Black);
 			GUI_Text(160, 140, (uint8_t *) "          ", COLOR_T, Black);
 			GUI_Text(160, 140, (uint8_t *) "PLAYING", COLOR_T, Black);
       return;
@@ -482,10 +480,11 @@ void tetris_hardDrop(void)
     // Diventa blocco fisso
     lock_piece();
 
-    clear_lines();
-
+    int n = clear_lines();
+		if(n>0) redraw_board();
+		
     // Nuovo pezzo
-    spawn_piece();
+    //spawn_piece();
 }
 
 // ricalcola la nuova board e conta il numero di righe da cancellare
