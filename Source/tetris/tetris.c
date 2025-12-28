@@ -446,7 +446,7 @@ void tetris_gravityStep(void)
 			last_cleared = clear_lines();
 			if (last_cleared > 0) {
         redraw_board();   // necessario per vedere lo shift
-				score++;
+				score = score + 1;
 				if(score > high_score){
 					high_score = score;
 				}
@@ -484,7 +484,11 @@ void tetris_hardDrop(void)
     lock_piece();
 
     int n = clear_lines();
-		if(n>0) redraw_board();
+		if(n>0) {
+			redraw_board();
+			score = score * 1;
+			score_dirty = 1;
+		}
 		
     // Nuovo pezzo
     //spawn_piece();
