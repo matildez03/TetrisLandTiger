@@ -27,7 +27,6 @@
 
 
 // Questa è la griglia: 0 = vuoto, 1 = occupato
-// volatile serve a dire al compilatore che questa memoria cambia spesso
 volatile int board[ROWS][COLS]; 
 volatile GameState gameState = GAME_PAUSED;
 static uint8_t firstStart = 1;
@@ -50,11 +49,18 @@ volatile uint8_t key1_event  = 0;
 volatile int last_cleared = 0; //definita qui per essere visibile nella watch in debug
 volatile uint8_t score_dirty = 0;
 
-static uint16_t rng;
+static uint16_t rng = 0xACE1u;
+
+void seed_rng_once(void)
+{
+    // chiamata allo start
+    rng ^= (uint16_t)LPC_TIM1->TC;
+    rng ^= (uint16_t)LPC_RIT->RICOUNTER;
+    if (rng == 0) rng = 0xACE1u;
+}
 
 static uint8_t rand7(void)
 {
-		uint32_t t = LPC_TIM1->TC;
     rng = (rng >> 1) ^ (-(rng & 1u) & 0xB400u);
     return (uint8_t)(rng % 7);
 }
@@ -185,7 +191,7 @@ void Reset_Board(void) {
         }
     }
 }
-
+ 
 void Draw_Block(int r, int c, uint16_t color) {
     int x0 = c * BLOCK_SIZE;
     int y0 = r * BLOCK_SIZE;
@@ -240,8 +246,6 @@ void spawn_piece(void)
     draw_piece_at(cur_r, cur_c, cur_id, cur_rot, PIECE_COLORS[cur_id]);
 }
 
-
-
 //funzioni di gioco
 void toggle_pause(){
 	if(firstStart || gameState == GAME_OVER){
@@ -255,6 +259,7 @@ void toggle_pause(){
 			score_dirty = 1;
 		}
 		if(firstStart){
+			seed_rng_once();
 			// cancello l'avviso press k1 to start
 			GUI_Text(30, 180, (uint8_t *) "            ", Black, Black);
 			GUI_Text(30, 200, (uint8_t *) "           ", Black, Black);
@@ -346,11 +351,30 @@ static void draw_piece_at(int r0, int c0, int id, int rot, uint16_t color){
         }
     }
 }
-
-static void erase_piece_at(int r0, int c0, int id, int rot)
+static void erase_piece_at(int r, int c, int id, int rot)
 {
-    draw_piece_at(r0, c0, id, rot, Black);
+    int i, j;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            if (piece_cell(id, rot, i, j)) {
+                restore_cell_from_board(r + i, c + j);
+            }
+        }
+    }
 }
+
+static void restore_cell_from_board(int r, int c)
+{
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+
+    if (board[r][c] == 0) {
+        Draw_Block(r, c, Black);
+    } else {
+        int id = board[r][c] - 1;     // 0..6
+        Draw_Block(r, c, PIECE_COLORS[id]);
+    }
+}
+
 
 static void lock_piece(void){
     int i = 0;
@@ -369,7 +393,7 @@ static void lock_piece(void){
 }
 
 static void redraw_board(void) {
-    // pulisci area gioco (solo interno, non il bordo)
+    // pulizia
 		int r = 0;
 		int c = 0;
     for (r=0; r<ROWS; r++) {
@@ -446,8 +470,8 @@ void tetris_gravityStep(void)
 			lock_piece();
 			last_cleared = clear_lines();
 			if (last_cleared > 0) {
-        redraw_board();   // necessario per vedere lo shift
-				score = score + 1;
+        redraw_board();  
+				score = score + last_cleared;
 				if(score > high_score){
 					high_score = score;
 				}
@@ -487,7 +511,7 @@ void tetris_hardDrop(void)
     int n = clear_lines();
 		if(n>0) {
 			redraw_board();
-			score = score + 1;
+			score = score + n;
 			if(score > high_score){
 				high_score = score;
 			}
@@ -495,7 +519,7 @@ void tetris_hardDrop(void)
 		}
 		
     // Nuovo pezzo
-    //spawn_piece();
+    spawn_piece();
 }
 
 // ricalcola la nuova board e conta il numero di righe da cancellare
@@ -503,10 +527,11 @@ void tetris_hardDrop(void)
 int clear_lines(void)
 {
     int r, c;
-    int write_r = ROWS - 1;
     int cleared = 0;
+	int i;
 
     for (r = ROWS - 1; r >= 0; r--) {
+
         int full = 1;
         for (c = 0; c < COLS; c++) {
             if (board[r][c] == 0) { full = 0; break; }
@@ -514,22 +539,25 @@ int clear_lines(void)
 
         if (full) {
             cleared++;
-        } else {
-            if (write_r != r) {
+
+            // shift giù tutte le righe sopra r
+            for (i = r; i > 0; i--) {
                 for (c = 0; c < COLS; c++) {
-                    board[write_r][c] = board[r][c];
+                    board[i][c] = board[i-1][c];
                 }
             }
-            write_r--;
-        }
-    }
 
-    for (r = write_r; r >= 0; r--) {
-        for (c = 0; c < COLS; c++) board[r][c] = 0;
+            // nuova riga 0 vuota
+            for (c = 0; c < COLS; c++) {
+                board[0][c] = 0;
+            }
+
+            // ricontrolla la stessa riga r (perché ora contiene la vecchia r-1)
+            r++;
+        }
     }
 
     return cleared;
 }
-
 
 
