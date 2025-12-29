@@ -239,7 +239,7 @@ void spawn_piece(void)
   // lose condition: se non posso piazzarlo già all'inizio
   if (!can_place(cur_r, cur_c, cur_id, cur_rot)) {
 		gameState = GAME_OVER;
-    GUI_Text(160, 140, (uint8_t *) "GAME OVER", Red, Black);
+    GUI_Text(160, 140, (uint8_t *) "GAME OVER", White, Red);
     return;
   }
 
@@ -480,14 +480,6 @@ void tetris_gravityStep(void)
     spawn_piece();
 }
 
-}
-
-void tetris_softDrop(void)
-{
-    // chiamala nel main ogni ciclo (o nel RIT) quando softdrop_on=1
-    if (softdrop_on) {
-        tetris_gravityStep(); // un passo extra
-    }
 }
 
 void tetris_hardDrop(void)

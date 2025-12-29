@@ -85,7 +85,7 @@ int main(void)
   Init_Game_Graphics();         // Disegna la griglia
  // Reset_Board();                // Pulisce la memoria
 	
-	init_RIT(625000);									/* RIT Initialization a 25msc / 50 msec = 0x004C4B40   	*/
+	init_RIT(750000);									/* RIT Initialization a 30msc / 50 msec = 0x004C4B40   	*/
 	enable_RIT();
 
 	init_timer(0, 0, 0, 3, 0x001E8480); 	// Timer0 inizializzazione con periodo 0,08 sec
@@ -127,8 +127,6 @@ int main(void)
 			score_dirty = 0;
 			update_score();
 		}
-		
-	
 		
 		if (key2_event) {
 			key2_event = 0;

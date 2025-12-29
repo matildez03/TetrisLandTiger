@@ -65,9 +65,13 @@ void RIT_IRQHandler (void)
 		J_down++;
 		// Qui non usiamo "J_down == 1" perché vogliamo che scenda veloce 
     // finché teniamo premuto il joystick
-    if(J_down % 2 == 0) { // Regola la velocità del drop (ogni 2 cicli RIT)
-       if(gameState == GAME_RUNNING) //tetris_gravityStep();
+		if(gameState == GAME_RUNNING){
+			if(J_down == 1){
+			tetris_gravityStep();
+			}
+			if(J_down % 2 == 0) { // Regola la velocità del drop (ogni 2 cicli RIT)
 				 softdrop_on = 1;
+			}
     }
 	}
 	else{
@@ -159,9 +163,7 @@ void RIT_IRQHandler (void)
 	if (down_1 != 0) {  // debounce press
 		down_1++;
 		if(down_1 == 2){
-			//toggle_pause();
 			key1_event = 1;
-			//usa flag per key event e gestiscilo nel main loop richiamando la funzione
 		}
 		
     if ((LPC_GPIO2->FIOPIN & (1<<11)) != 0) {   // released
@@ -186,10 +188,6 @@ void RIT_IRQHandler (void)
 		}	
 		LPC_RIT->RICTRL |= 0x1;
 	}
-	
-	
-	
-	
 	
 	reset_RIT();
   LPC_RIT->RICTRL |= 0x1;	/* clear interrupt flag */

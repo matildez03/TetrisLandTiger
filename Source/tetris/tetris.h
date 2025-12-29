@@ -48,7 +48,6 @@ static void restore_cell_from_board(int r, int c);
 void tetris_moveLeft(void);
 void tetris_moveRight(void);
 void tetris_rotate(void);
-void tetris_softDrop(void);
 void tetris_hardDrop(void);
 void tetris_gravityStep(void);
 int clear_lines(void);
