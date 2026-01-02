@@ -1,12 +1,3 @@
-/*********************************************************************************************************
-**--------------File Info---------------------------------------------------------------------------------
-** File name:           IRQ_RIT.c
-** Last modified Date:  2014-09-25
-** Last Version:        V1.00
-** Descriptions:        functions to manage T0 and T1 interrupts
-** Correlated files:    RIT.h
-**--------------------------------------------------------------------------------------------------------
-*********************************************************************************************************/
 #include "LPC17xx.h"
 #include "RIT.h"
 #include "../led/led.h"
@@ -14,20 +5,10 @@
 #include "../GLCD/GLCD.h"
 #include "../tetris/tetris.h"
 
-/******************************************************************************
-** Function name:		RIT_IRQHandler
-**
-** Descriptions:		REPETITIVE INTERRUPT TIMER handler
-**
-** parameters:			None
-** Returned value:		None
-**
-******************************************************************************/
 volatile uint8_t right_activate;
 volatile uint8_t down_activate;
 volatile uint8_t left_activate;
 volatile uint8_t up_activate;
-
 
 volatile int down_0 = 0;
 volatile int down_1 = 0;
@@ -50,7 +31,7 @@ void RIT_IRQHandler (void)
 		J_select++;
 		switch(J_select){
 			case 1:
- 				//code here
+ 				// non fa nulla
 				break;
 			default:
 				break;
@@ -189,7 +170,7 @@ void RIT_IRQHandler (void)
 		LPC_RIT->RICTRL |= 0x1;
 	}
 	
-	reset_RIT();
+		reset_RIT();
   LPC_RIT->RICTRL |= 0x1;	/* clear interrupt flag */
   return;
 }
