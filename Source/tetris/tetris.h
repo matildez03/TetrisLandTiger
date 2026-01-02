@@ -3,17 +3,9 @@
 
 #include <stdint.h>
 
-/* Costanti pubbliche */
+/* Campo */
 #define ROWS 20
 #define COLS 10
-#define BLOCK_SIZE 15
-
-/* Colori utili */
-#define Black 0x0000
-#define White 0xFFFF
-#define Red   0xF800
-#define Blue  0x001F
-#define Green 0x07E0
 
 typedef enum {
     GAME_PAUSED = 0,
@@ -21,37 +13,40 @@ typedef enum {
     GAME_OVER
 } GameState;
 
-//flags eventi
-
-// ===== Flag eventi =====
-extern volatile uint8_t gravity_event;
-extern volatile uint8_t softdrop_on;
-extern volatile uint8_t harddrop_on;
-extern volatile uint8_t key1_event;
-extern volatile uint8_t key2_event;
-extern volatile uint8_t score_dirty;
-
-
-/* Dichiarazione (non definizione!) */
+/* Stato pubblico (letto dalla grafica e dal main) */
+extern volatile int board[ROWS][COLS];
 extern volatile GameState gameState;
 
-/* Prototipi */
-void Init_Game_Graphics(void);
+extern volatile uint8_t gravity_event;
+extern volatile uint8_t softdrop_on;
+extern volatile uint8_t key1_event;
+extern volatile uint8_t key2_event;
+
+extern volatile uint32_t score;
+extern volatile uint32_t high_score;
+extern volatile uint8_t score_dirty;
+extern volatile int last_cleared;
+
+/* Dati pezzi (usati anche dalla grafica) */
+extern const uint8_t  PIECES[7][4][4];
+extern const uint16_t PIECE_COLORS[7];
+
+// rotazione dei pezzi
+uint8_t piece_cell(int id, int rot, int i, int j);
+
+/* API gioco */
+void seed_rng_once(void);
 void Reset_Board(void);
-void Draw_Block(int r, int c, uint16_t color);
+
 void spawn_piece(void);
-void toggle_pause();
-static void redraw_board(void);
-static int can_place(int r0, int c0, int id, int rot);
-static void draw_piece_at(int r0, int c0, int id, int rot, uint16_t color);
-static void restore_cell_from_board(int r, int c);
+void toggle_pause(void);
+
 void tetris_moveLeft(void);
 void tetris_moveRight(void);
 void tetris_rotate(void);
-void tetris_hardDrop(void);
 void tetris_gravityStep(void);
-int clear_lines(void);
-void update_score();
+void tetris_hardDrop(void);
 
+int clear_lines(void);
 
 #endif /* _TETRIS_H_ */

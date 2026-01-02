@@ -712,6 +712,21 @@
               <FileType>5</FileType>
               <FilePath>.\Source\tetris\tetris.h</FilePath>
             </File>
+            <File>
+              <FileName>tetris_gfx.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\tetris\tetris_gfx.h</FilePath>
+            </File>
+            <File>
+              <FileName>tetris_gfx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\tetris\tetris_gfx.c</FilePath>
+            </File>
+            <File>
+              <FileName>tetris_colors.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\tetris\tetris_colors.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1372,6 +1387,21 @@
               <FileName>tetris.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\Source\tetris\tetris.h</FilePath>
+            </File>
+            <File>
+              <FileName>tetris_gfx.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\tetris\tetris_gfx.h</FilePath>
+            </File>
+            <File>
+              <FileName>tetris_gfx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Source\tetris\tetris_gfx.c</FilePath>
+            </File>
+            <File>
+              <FileName>tetris_colors.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Source\tetris\tetris_colors.h</FilePath>
             </File>
           </Files>
         </Group>
