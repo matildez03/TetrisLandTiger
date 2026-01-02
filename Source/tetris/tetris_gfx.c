@@ -14,7 +14,7 @@ static void restore_cell_from_board(int r, int c)
     if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
 
     if (board[r][c] == 0) {
-        Draw_Block(r, c, Black);
+        Draw_Block(r, c, BG_COLOR);
     } else {
         int id = board[r][c] - 1;     // 0..6
         Draw_Block(r, c, PIECE_COLORS[id]);
@@ -26,18 +26,18 @@ void update_score(void)
 {
     char buf[16];
 
-    GUI_Text(160, 80,  (uint8_t *)"        ", Black, Black);
-    GUI_Text(160, 120, (uint8_t *)"        ", Black, Black);
+    GUI_Text(160, 80,  (uint8_t *)"        ", BG_COLOR, BG_COLOR);
+    GUI_Text(160, 120, (uint8_t *)"        ", BG_COLOR, BG_COLOR);
 
     sprintf(buf, "%lu", (unsigned long)score);
-    GUI_Text(160, 80, (uint8_t *)buf, Red, Black);
+    GUI_Text(160, 80, (uint8_t *)buf, Red, BG_COLOR);
 
     sprintf(buf, "%lu", (unsigned long)high_score);
-    GUI_Text(160, 120, (uint8_t *)buf, Red, Black);
+    GUI_Text(160, 120, (uint8_t *)buf, Red, BG_COLOR);
 }
 
 void Init_Game_Graphics(void){
-	LCD_Clear(GRAY);
+	LCD_Clear(BG_COLOR);
 	int limit_X = COLS * BLOCK_SIZE;  // 150
   int limit_Y = ROWS * BLOCK_SIZE;  // 300
 
@@ -51,13 +51,14 @@ void Init_Game_Graphics(void){
 	Draw_Grid();
 	
 	// testo 
-	GUI_Text(160, 20,  (uint8_t *)"TETRIS",   White, Red);
-	GUI_Text(160, 60,  (uint8_t *)"Score:",   White, Black);
-	GUI_Text(160, 80,  (uint8_t *)"0",        Red,   Black);
-	GUI_Text(160, 100, (uint8_t *)"Highest:", White, Black);
-	GUI_Text(160, 120, (uint8_t *)"0",        Red,   Black);
-	GUI_Text(30, 180, (uint8_t *)" Press key1 ", White, Red);
-	GUI_Text(30, 200, (uint8_t *)" to start ",   White, Red);
+	GUI_Text(170, 20,  (uint8_t *)"TETRIS",   White, Red);
+	GUI_Text(160, 60,  (uint8_t *)"Score:",   White, BG_COLOR);
+	GUI_Text(160, 80,  (uint8_t *)"0",        Red,   BG_COLOR);
+	GUI_Text(160, 100, (uint8_t *)"Highest:", White, BG_COLOR);
+	GUI_Text(160, 120, (uint8_t *)"0",        Red,   BG_COLOR);
+	GUI_Text(160, 180, (uint8_t *)" Press ", White, Red);
+	GUI_Text(160, 200, (uint8_t *)" 'key1' ", White, Red);
+	GUI_Text(160, 220, (uint8_t *)" to start ",   White, Red);
 }
 
 void Draw_Grid(void)
@@ -103,7 +104,7 @@ void redraw_board(void){
     // pulizia area campo
 	for (r = 0; r < ROWS; r++) {
 		for (c = 0; c < COLS; c++) {
-			Draw_Block(r, c, Black);
+			Draw_Block(r, c, BG_COLOR);
     }
   }
 

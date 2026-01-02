@@ -157,31 +157,30 @@ void toggle_pause(void)
 
         if (firstStart) {
             seed_rng_once();
-            GUI_Text(30, 180, (uint8_t *)"            ", Black, Black);
-            GUI_Text(30, 200, (uint8_t *)"           ",  Black, Black);
-												Draw_Grid();
         }
 
         spawn_piece();
         gameState = GAME_RUNNING;
         firstStart = 0;
 
-        GUI_Text(160, 140, (uint8_t *)"          ", COLOR_T, Black);
-        GUI_Text(160, 140, (uint8_t *)"PLAYING",   COLOR_T, Black);
+       	GUI_Text(160, 180, (uint8_t *)"          ", White, BG_COLOR);
+								GUI_Text(160, 200, (uint8_t *)"          ", White, BG_COLOR);
+								GUI_Text(160, 220, (uint8_t *)"          ",   White, BG_COLOR);
+								GUI_Text(170, 140, (uint8_t *)"PLAYING",   White,COLOR_T);
         return;
     }
 
     if (gameState == GAME_RUNNING) {
         gameState = GAME_PAUSED;
-        GUI_Text(160, 140, (uint8_t *)"         ", COLOR_T, Black);
-        GUI_Text(160, 140, (uint8_t *)"PAUSED",   COLOR_T, Black);
+        GUI_Text(170, 140, (uint8_t *)"        ", COLOR_T, BG_COLOR);
+        GUI_Text(170, 140, (uint8_t *)"PAUSED",   White, COLOR_T);
         return;
     }
 
     if (gameState == GAME_PAUSED) {
         gameState = GAME_RUNNING;
-        GUI_Text(160, 140, (uint8_t *)"          ", COLOR_T, Black);
-        GUI_Text(160, 140, (uint8_t *)"PLAYING",   COLOR_T, Black);
+        GUI_Text(170, 140, (uint8_t *)"        ", COLOR_T, BG_COLOR);
+        GUI_Text(170, 140, (uint8_t *)"PLAYING",   White,COLOR_T);
         return;
     }
 }
