@@ -117,6 +117,7 @@ void redraw_board(void){
 			}
 		}}
 		Draw_Grid();
+		LPC_TIM0->TC = 0; //reset timer
 }
 
 // gestione del pezzo corrente (cancellato e riscritto una riga più in basso)

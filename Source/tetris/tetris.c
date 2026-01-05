@@ -16,6 +16,10 @@ volatile uint8_t gravity_event = 0;
 volatile uint8_t softdrop_on   = 0;
 volatile uint8_t key1_event    = 0;
 volatile uint8_t key2_event    = 0;
+volatile uint8_t right_activate = 0;
+volatile uint8_t left_activate = 0;
+volatile uint8_t up_activate = 0;
+
 volatile int last_cleared      = 0;
 volatile uint8_t score_dirty   = 0;
 
@@ -289,7 +293,6 @@ int clear_lines(void){
 	int r;
 	int c;
 	int i;
-	
 
     for (r = ROWS - 1; r >= 0; r--) {
         int full = 1;
@@ -308,7 +311,7 @@ int clear_lines(void){
 
             for (c = 0; c < COLS; c++) board[0][c] = 0;
 
-            r++; /* ricontrolla la stessa riga */
+            r++; 
         }
     }
 

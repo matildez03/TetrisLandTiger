@@ -5,10 +5,6 @@
 #include "../GLCD/GLCD.h"
 #include "../tetris/tetris.h"
 
-volatile uint8_t right_activate;
-volatile uint8_t down_activate;
-volatile uint8_t left_activate;
-volatile uint8_t up_activate;
 
 volatile int down_0 = 0;
 volatile int down_1 = 0;
@@ -48,7 +44,8 @@ void RIT_IRQHandler (void)
     // finché teniamo premuto il joystick
 		if(gameState == GAME_RUNNING){
 			if(J_down == 1){
-			tetris_gravityStep();
+				gravity_event = 1;
+			//tetris_gravityStep();
 			}
 			if(J_down % 2 == 0) { // Regola la velocità del drop (ogni 2 cicli RIT)
 				 softdrop_on = 1;
@@ -57,7 +54,6 @@ void RIT_IRQHandler (void)
 	}
 	else{
 		J_down=0;
-		down_activate =0;
 		softdrop_on = 0;
 	}
 	
@@ -67,7 +63,7 @@ void RIT_IRQHandler (void)
 		switch(J_left){
 			case 1:
 				left_activate =1;
-			if(gameState == GAME_RUNNING) tetris_moveLeft();
+			//if(gameState == GAME_RUNNING) tetris_moveLeft();
 			
 				break;
 			default:
@@ -86,7 +82,7 @@ void RIT_IRQHandler (void)
 		switch(J_right){
 			case 1:
 			right_activate =1;
-			if(gameState == GAME_RUNNING) tetris_moveRight();
+			//if(gameState == GAME_RUNNING) tetris_moveRight();
 			
 				break;
 			default:
@@ -105,7 +101,7 @@ void RIT_IRQHandler (void)
 		switch(J_up){
 			case 1:
 				up_activate =1;
-				if(gameState == GAME_RUNNING) tetris_rotate(); 
+				//if(gameState == GAME_RUNNING) tetris_rotate(); 
 	
 				break;
 			default:

@@ -18,9 +18,12 @@ extern volatile int board[ROWS][COLS];
 extern volatile GameState gameState;
 
 extern volatile uint8_t gravity_event;
-extern volatile uint8_t softdrop_on;
+extern volatile uint8_t softdrop_on; //down_activate
 extern volatile uint8_t key1_event;
 extern volatile uint8_t key2_event;
+extern volatile uint8_t right_activate;
+extern volatile uint8_t left_activate;
+extern volatile uint8_t up_activate;
 
 extern volatile uint32_t score;
 extern volatile uint32_t high_score;
