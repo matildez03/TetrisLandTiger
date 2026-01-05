@@ -88,7 +88,7 @@ int main(void)
 	init_RIT(750000);									/* RIT Initialization a 30msc / 50 msec = 0x004C4B40   	*/
 	enable_RIT();
 
-	init_timer(0, 0, 0, 3, 0x0007A120); 	// Timer0 inizializzazione con periodo 0,02 sec
+	init_timer(0, 0, 0, 3, 0x0003D090); 	// Timer0 inizializzazione con periodo 0,01 sec
 	enable_timer(0);
 	init_timer(1, 0, 0, 3, 0x001E8480); 	// Timer1 inizializzazione con periodo 0,08 sec
 	enable_timer(1);
@@ -136,7 +136,7 @@ int main(void)
     LPC_TIM0->TC  = 0;  // reset counter (opzionale ma rende immediato)
     LPC_TIM0->TCR = 1;  // start
 
-    LPC_TIM0->MR0 = softdrop_on ? 0x0003D090 : 0x0007A120; // 0.01s / 0.02s
+    LPC_TIM0->MR0 = softdrop_on ? 0x0001E848 : 0x0003D090; // 0.005s / 0.01s
 		}
 
 		if(score_dirty){

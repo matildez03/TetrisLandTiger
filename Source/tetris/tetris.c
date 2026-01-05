@@ -123,6 +123,8 @@ static void lock_piece(void){
             }
         }
     }
+				score = score +10;
+				if (score > high_score) high_score = score;
 }
 
 /* ===== API gioco ===== */
@@ -251,13 +253,18 @@ void tetris_gravityStep(void)
 
     lock_piece();
     last_cleared = clear_lines();
-
     if (last_cleared > 0) {
-        redraw_board();
-        score += (uint32_t)last_cleared;
-        if (score > high_score) high_score = score;
-        score_dirty = 1;
+					if (board_is_empty()) {
+        score += 600;          // tetris 
+					}else{
+							 score = score + (100 * last_cleared);
+					}
+					if (score > high_score) high_score = score;
+					
+					redraw_board();
     }
+				
+				score_dirty = 1;
 
     spawn_piece();
 }
@@ -278,12 +285,15 @@ void tetris_hardDrop(void)
 
     int n = clear_lines();
     if (n > 0) {
-        redraw_board();
-        score += (uint32_t)n;
-        if (score > high_score) high_score = score;
-        score_dirty = 1;
+					if (board_is_empty()) {
+        score += 600;          // tetris 
+					}else{
+							 score = score + (100 * n);
+					}
+					if (score > high_score) high_score = score;
+					redraw_board();
     }
-
+				score_dirty = 1;
     spawn_piece();
 }
 
@@ -315,5 +325,18 @@ int clear_lines(void){
         }
     }
 
+
     return cleared;
 }
+
+static uint8_t board_is_empty(void)
+{
+    int r, c;
+    for (r = 0; r < ROWS; r++) {
+        for (c = 0; c < COLS; c++) {
+            if (board[r][c] != 0) return 0;
+        }
+    }
+    return 1;
+}
+

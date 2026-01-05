@@ -45,7 +45,6 @@ void RIT_IRQHandler (void)
 		if(gameState == GAME_RUNNING){
 			if(J_down == 1){
 				gravity_event = 1;
-			//tetris_gravityStep();
 			}
 			if(J_down % 2 == 0) { // Regola la velocità del drop (ogni 2 cicli RIT)
 				 softdrop_on = 1;
@@ -62,9 +61,7 @@ void RIT_IRQHandler (void)
 		J_left++;
 		switch(J_left){
 			case 1:
-				left_activate =1;
-			//if(gameState == GAME_RUNNING) tetris_moveLeft();
-			
+				left_activate =1;		
 				break;
 			default:
 				break;
@@ -82,8 +79,6 @@ void RIT_IRQHandler (void)
 		switch(J_right){
 			case 1:
 			right_activate =1;
-			//if(gameState == GAME_RUNNING) tetris_moveRight();
-			
 				break;
 			default:
 				break;
@@ -101,8 +96,6 @@ void RIT_IRQHandler (void)
 		switch(J_up){
 			case 1:
 				up_activate =1;
-				//if(gameState == GAME_RUNNING) tetris_rotate(); 
-	
 				break;
 			default:
 				break;

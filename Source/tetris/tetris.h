@@ -51,5 +51,6 @@ void tetris_gravityStep(void);
 void tetris_hardDrop(void);
 
 int clear_lines(void);
+static uint8_t board_is_empty(void);
 
 #endif /* _TETRIS_H_ */
