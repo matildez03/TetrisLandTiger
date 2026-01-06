@@ -148,6 +148,9 @@ void RIT_IRQHandler (void)
 	//key2: hard drop
 	if(down_2 != 0){
 		down_2++;
+		rng ^= (uint16_t)LPC_TIM0->TC;
+		rng = (rng << 1) | (rng >> 15);
+
 		if(down_2 == 2){
 			key2_event = 1;
 		}	

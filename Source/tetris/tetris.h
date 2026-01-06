@@ -34,6 +34,9 @@ extern volatile int last_cleared;
 extern const uint8_t  PIECES[7][4][4];
 extern const uint16_t PIECE_COLORS[7];
 
+// RNG per random
+extern uint16_t rng;
+
 // rotazione dei pezzi
 uint8_t piece_cell(int id, int rot, int i, int j);
 

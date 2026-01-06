@@ -39,61 +39,25 @@
 extern uint8_t ScaleFlag; // <- ScaleFlag needs to visible in order for the emulator to find the symbol (can be placed also inside system_LPC17xx.h but since it is RO, it needs more work)
 #endif
 
-/*
-* COSE DA RICORDARE
-*
-* per funzione assembler, definirla nel file asm_functions.s e definire il la funzione come extern
-*
-* timer2 e timer3 attivare tramite wizard in system_LPC17xx.c in Power Control for Peripherals Register
-*
-* La frequenza nel nostro caso ? 25MHz = 25.000.000 Hz
-* count = [s] * [Hz]
-* 1 ms = 10^-3 s       1 ns = 10^-9 s
-* 1 MHz = 10^6 Hz
-*
-* quando si chiede un led che lampeggi si pu? usare:
-* - met? valore del match register per raggiugere il periodo richiesto
-* - si dimezza il periodo richiesto ed utilizziamo una variabile locale per gestire l'on e l'off
-*
-* inizializzazione timer: init_timer(uint8_t timer_num, uint32_t Prescaler, uint8_t MatchReg, uint8_t SRImatchReg, uint32_t TimerInterval)
-* dove SRImatchReg :
-* - 1? bit (LSB) : interrupt
-* - 2? bit       : reset
-* - 3? bit (MSB) : stop
-* (di default il registro MSR ? settato a 3 (interrup e reset)
-*
-* shift sinistro : <<
-* shift destro : >>
-*
-* per prendere il valore del TimerCounter (TC) con il Timer 1:
-*       val_int = LPC_TIM1 -> TC
-*/
-
-//scheletro funzione assembler
-extern void name_function_assembler(int r0, int r1, int r2, int r3);
+#define tim0Period  0x0007A120 // FLAG DA MODIFICARE
+#define RITPeriod  0x0007A120 // FLAG DA MODIFICARE
 
 int main(void)
 {
-  SystemInit();  												/* System Initialization (i.e., PLL)  */
+	SystemInit();  												/* System Initialization (i.e., PLL)  */
 	BUTTON_init();												/* Inizializzazione Buttons 					*/
-  LCD_Initialization();									/* Inizializzazione Display 					*/
-	//TP_Init();														/* Inizializzazione TouchPanel 				*/
+	LCD_Initialization();									/* Inizializzazione Display 					*/
 	joystick_init();											/* Inizializzazione Joystick 					*/
 	LED_init();
-	//TouchPanel_Calibrate();								/* Calibrazione touch display         */
-	// Devono stare DOPO LCD_Initialization ma PRIMA del while(1)
-  Init_Game_Graphics();         // Disegna la griglia
- // Reset_Board();                // Pulisce la memoria
+ Init_Game_Graphics();         // Disegna la griglia
 	
-	init_RIT(750000);									/* RIT Initialization a 30msc / 50 msec = 0x004C4B40   	*/
+	init_RIT(RITPeriod);									/* RIT Initialization a 20msc , 30msc = 750000 / 50 msec = 0x004C4B40   	*/
 	enable_RIT();
 
-	init_timer(0, 0, 0, 3, 0x0003D090); 	// Timer0 inizializzazione con periodo 0,01 sec
+	init_timer(0, 0, 0, 3, tim0Period); 	// Timer0 inizializzazione con periodo 0,02 sec per gravitystep //1s*25Mhz = 25.000.000 = 0x017D7840
 	enable_timer(0);
-	init_timer(1, 0, 0, 3, 0x001E8480); 	// Timer1 inizializzazione con periodo 0,08 sec
-	enable_timer(1);
-	
-	//metto la cpu in power down mode
+
+	//POWER DOWN MODE
 	LPC_SC->PCON |= 0x1;      // set PM0 = 1
 	LPC_SC->PCON &= ~(0x2);  // set PM1 = 0
 	
@@ -128,15 +92,16 @@ int main(void)
 			gravity_event = 0;
 		}
 
-    // soft drop: se attivo, fai un passo extra (2x)
 		if (softdrop_on != last_soft) {
     last_soft = softdrop_on;
 		
     LPC_TIM0->TCR = 0;  // stop
-    LPC_TIM0->TC  = 0;  // reset counter (opzionale ma rende immediato)
+    LPC_TIM0->TC  = 0;  // reset counter 
     LPC_TIM0->TCR = 1;  // start
+			
+			
 
-    LPC_TIM0->MR0 = softdrop_on ? 0x0001E848 : 0x0003D090; // 0.005s / 0.01s
+    LPC_TIM0->MR0 = softdrop_on ? (tim0Period/2) : tim0Period; // 0.005s / 0.02s
 		}
 
 		if(score_dirty){
@@ -156,33 +121,5 @@ int main(void)
 
 
 /*
-Operatori logici in C:
-1. NOT (!)       : Inverte il valore logico (vero/falso).
-   Esempio: int x = 1; int risultato = !x;  // risultato = 0
-2. AND (&&)      : Restituisce vero (1) se entrambe le espressioni sono vere.
-   Esempio: int a = 1, b = 1; int risultato = a && b;  // risultato = 1
-3. OR ()       : Restituisce vero (1) se almeno una delle espressioni è vera.
-   Esempio: int a = 1, b = 0; int risultato = a  b;  // risultato = 1
-4. XOR logico    : Non esiste un operatore diretto, ma si può simulare:
-   Sintassi: (espressione1  espressione2) && !(espressione1 && espressione2)
-   Esempio: int a = 1, b = 0; int risultato = (a  b) && !(a && b);  // risultato = 1
-
-Operatori bit a bit in C:
-1. NOT (~)       : Inverte ogni bit (complemento a 1).
-   Esempio: int x = 0b1100; int risultato = ~x;  // risultato = 0b...11110011
-2. AND (&)       : Restituisce 1 solo dove entrambi i bit sono 1.
-   Esempio: int x = 0b1100, y = 0b1010; int risultato = x & y;  // risultato = 0b1000
-3. OR (|)        : Restituisce 1 se almeno uno dei bit è 1.
-   Esempio: int x = 0b1100, y = 0b1010; int risultato = x | y;  // risultato = 0b1110
-4. XOR (^)       : Restituisce 1 dove i bit sono diversi.
-   Esempio: int x = 0b1100, y = 0b1010; int risultato = x ^ y;  // risultato = 0b0110
-
-Operatori di spostamento bit:
-1. Shift a sinistra (<<) : Sposta i bit a sinistra, riempiendo con 0.
-   Esempio: int x = 0b0011; int risultato = x << 2;  // risultato = 0b1100
-2. Shift a destra (>>)   : Sposta i bit a destra, riempiendo con 0 o con il bit del segno (dipende dal compilatore).
-   Esempio: int x = 0b1100; int risultato = x >> 2;  // risultato = 0b0011
-*/
-/*********************************************************************************************************
-      END FILE
+END OF FILE
 *********************************************************************************************************/

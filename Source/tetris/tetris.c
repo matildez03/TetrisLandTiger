@@ -30,10 +30,10 @@ static int cur_c   = 3;
 static int cur_rot = 0;
 
 // RNG per random
-static uint16_t rng = 0xACE1u;
+uint16_t rng = 0xACE1u;
 
 void seed_rng_once(void){
-	rng ^= (uint16_t)LPC_TIM1->TC;
+	rng ^= (uint16_t)LPC_TIM0->TC;
 	rng ^= (uint16_t)LPC_RIT->RICOUNTER;
 	if (rng == 0) rng = 0xACE1u;
 }
