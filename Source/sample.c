@@ -1,26 +1,3 @@
-/****************************************Copyright (c)****************************************************
-**                                      
-**                                 http://www.powermcu.com
-**
-**--------------File Info---------------------------------------------------------------------------------
-** File name:               main.c
-** Descriptions:            The GLCD application function
-**
-**--------------------------------------------------------------------------------------------------------
-** Created by:              AVRman
-** Created date:            2010-11-7
-** Version:                 v1.0
-** Descriptions:            The original version
-**
-**--------------------------------------------------------------------------------------------------------
-** Modified by:             Paolo Bernardi
-** Modified date:           03/01/2020
-** Version:                 v2.0
-** Descriptions:            basic program for LCD and Touch Panel teaching
-**
-*********************************************************************************************************/
-
-/* Includes ------------------------------------------------------------------*/
 #include "LPC17xx.h"
 #include "GLCD/GLCD.h"
 #include "TouchPanel/TouchPanel.h"
@@ -30,7 +7,6 @@
 #include "joystick/joystick.h"
 #include "led/led.h"
 #include "tetris/tetris.h"
-
 
 
 #define SIMULATOR 1
