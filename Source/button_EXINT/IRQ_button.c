@@ -23,7 +23,7 @@ void EINT1_IRQHandler (void)	  	/* KEY1														 */
 	LPC_PINCON->PINSEL4 &= ~(3 << 22);
 	down_1=1;
 	LPC_SC->EXTINT |= (1<<1);     /* clear pending interrupt         */
-	//reset_RIT();
+	reset_RIT();
 }
 
 void EINT2_IRQHandler (void)	  	/* KEY2														 */

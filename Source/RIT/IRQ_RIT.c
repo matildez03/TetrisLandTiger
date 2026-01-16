@@ -4,6 +4,7 @@
 #include "../timer/timer.h"
 #include "../GLCD/GLCD.h"
 #include "../tetris/tetris.h"
+#include "../adc/adc.h"
 
 
 volatile int down_0 = 0;
@@ -22,6 +23,7 @@ void RIT_IRQHandler (void)
 	static int J_up = 0;
 	
 	if((LPC_GPIO1->FIOPIN & (1<<25)) == 0){	
+		
 		/* Joytick J_Select pressed p1.25*/
 		
 		J_select++;
@@ -136,12 +138,12 @@ void RIT_IRQHandler (void)
 			key1_event = 1;
 		}
 		
-    if ((LPC_GPIO2->FIOPIN & (1<<11)) != 0) {   // released
+  if ((LPC_GPIO2->FIOPIN & (1<<11)) != 0) {   // released
       down_1 = 0;
       NVIC_EnableIRQ(EINT1_IRQn);
-      LPC_PINCON->PINSEL4 = (LPC_PINCON->PINSEL4 & ~(3 << 22)) | (1 << 22);
+      LPC_PINCON->PINSEL4 |= (1<<22);
     }
-		LPC_RIT->RICTRL |= 0x1;
+		//LPC_RIT->RICTRL |= 0x1;
 	}
 
 	

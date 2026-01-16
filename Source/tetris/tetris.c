@@ -3,6 +3,8 @@
 #include "tetris_gfx.h"
 #include "tetris_colors.h"
 #include <stdio.h>
+#include "../adc/adc.h"
+
 
 /* ===== Board e stato ===== */
 volatile int board[ROWS][COLS];
@@ -339,4 +341,21 @@ static uint8_t board_is_empty(void)
     }
     return 1;
 }
+
+// POTENZIOMETRO
+extern volatile uint16_t AD_current;
+
+uint32_t compute_mr0_from_adc(uint16_t adc, uint8_t softdrop){
+    if (adc < 50) adc = 0;   // dead-zone
+
+    uint32_t speed_milli = 1000UL + (4000UL * (uint32_t)adc) / 0xFFF; // 1000..5000
+    if (softdrop) speed_milli *= 2;
+
+    uint64_t num = 25000000ULL * 1000ULL;   // 64-bit, NO overflow
+    return (uint32_t)(num / speed_milli);
+}
+
+
+
+
 

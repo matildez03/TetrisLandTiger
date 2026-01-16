@@ -10,8 +10,8 @@
       <TargetName>LandTiger_LPC1768 (release)</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pArmCC>6220000::V6.22::ARMCLANG</pArmCC>
-      <pCCUsed>6220000::V6.22::ARMCLANG</pCCUsed>
+      <pArmCC>6240000::V6.24::ARMCLANG</pArmCC>
+      <pCCUsed>6240000::V6.24::ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\Source;.\Source\CMSIS_core;.\Source\GLCD;.\Source\timer;.\Source\button_EXINT;.\Source\TouchPanel</IncludePath>
+              <IncludePath>.\Source;.\Source\CMSIS_core;.\Source\GLCD;.\Source\timer;.\Source\button_EXINT;.\Source\TouchPanel;.\Source\adc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -728,6 +728,29 @@
               <FilePath>.\Source\tetris\tetris_colors.h</FilePath>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>adc</GroupName>
+          <Files>
+            <File>
+              <FileName>adc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Source\adc\adc.h</FilePath>
+            </File>
+            <File>
+              <FileName>IRQ_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\adc\IRQ_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>lib_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\adc\lib_adc.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>New Group</GroupName>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>
@@ -1404,6 +1427,29 @@
               <FilePath>.\Source\tetris\tetris_colors.h</FilePath>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>adc</GroupName>
+          <Files>
+            <File>
+              <FileName>adc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Source\adc\adc.h</FilePath>
+            </File>
+            <File>
+              <FileName>IRQ_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\adc\IRQ_adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>lib_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\adc\lib_adc.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>New Group</GroupName>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>
