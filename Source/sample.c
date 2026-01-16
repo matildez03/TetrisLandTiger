@@ -16,10 +16,10 @@ extern uint8_t ScaleFlag; // <- ScaleFlag needs to visible in order for the emul
 #endif
 
 #define tim0Period  0x017D7840 // FLAG DA MODIFICARE
-#define RITPeriod 0x0007A120 // FLAG DA MODIFICARE (0X0003D090=10ms, 0x0007A120 = 20ms)
+#define RITPeriod  0x000BEBC2 // FLAG DA MODIFICARE (0X0003D090=10ms, 0x0007A120 = 20ms, 0x000B71B0= 30)
 
 int main(void)
-{
+ {
 	SystemInit();  												/* System Initialization (i.e., PLL)  */
 	BUTTON_init();												/* Inizializzazione Buttons 					*/
 	LCD_Initialization();									/* Inizializzazione Display 					*/
@@ -43,7 +43,7 @@ int main(void)
   while (1)	
   {
 	
-		ADC_start_conversion();  
+		//ADC_start_conversion();  
 
 		if (key1_event){
 			key1_event = 0;
@@ -79,13 +79,18 @@ int main(void)
     last_mr0 = new_mr0;
     uint32_t tc = LPC_TIM0->TC;
     LPC_TIM0->MR0 = new_mr0;
-    if (tc >= new_mr0) LPC_TIM0->TC = 0;
+    if (tc >= new_mr0) LPC_TIM0->TC = 0;			
 				}
-
 		}
-
-
-
+		if(trig_clear_half){
+			trig_clear_half = 0;
+			activate_powerup_half();
+		}
+		
+		if(trig_slow){
+			trig_slow = 0;
+			LPC_TIM0->MR0 = tim0Period; // reimposta la caduta del tetramino a 1 square/sec
+		}
 		if(score_dirty){
 			score_dirty = 0;
 			update_score();

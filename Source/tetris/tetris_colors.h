@@ -12,8 +12,13 @@
 #define COLOR_S  0x07E0   /* Verde   */
 #define COLOR_Z  0xF800   /* Rosso   */
 
-#define BG_COLOR 0x2104   /* grigio molto scuro */
-#define GRAY 0x4208   /* grigio scuro */
+#define COLOR_PU_CLEAR_HALF  0xF81F  /* Magenta (fucsia) */
+#define COLOR_PU_SLOW        0xFFFF  /* Bianco */
+#define COLOR_MALUS  0x4010 // viola scuro
+
+#define BG_COLOR 0x4208   /* grigio scuro */
+// #define BG_COLOR 0x2104   /* grigio molto scuro */
+//#define GRAY 0x4208   /* grigio scuro */
 
 
 /* Colori base UI */

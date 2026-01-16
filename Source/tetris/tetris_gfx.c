@@ -3,6 +3,7 @@
 #include "LPC17xx.h"
 #include <stdio.h>
 
+
 // funzioni disponibili in glcd.h
 extern void LCD_Clear(uint16_t color);
 extern void LCD_DrawLine(int x0, int y0, int x1, int y1, uint16_t color);
@@ -28,18 +29,22 @@ void update_score(void)
 
     GUI_Text(160, 80,  (uint8_t *)"        ", BG_COLOR, BG_COLOR);
     GUI_Text(160, 120, (uint8_t *)"        ", BG_COLOR, BG_COLOR);
+				GUI_Text(160, 120, (uint8_t *)"        ", BG_COLOR, BG_COLOR);
 
     sprintf(buf, "%lu", (unsigned long)score);
     GUI_Text(160, 80, (uint8_t *)buf, Red, BG_COLOR);
 
     sprintf(buf, "%lu", (unsigned long)high_score);
     GUI_Text(160, 120, (uint8_t *)buf, Red, BG_COLOR);
+	
+				sprintf(buf, "%lu", (unsigned long)row_count);
+    GUI_Text(160, 160, (uint8_t *)buf, Red, BG_COLOR);
 }
 
 void Init_Game_Graphics(void){
 	LCD_Clear(BG_COLOR);
 	int limit_X = COLS * BLOCK_SIZE;  // 150
-  int limit_Y = ROWS * BLOCK_SIZE;  // 300
+ int limit_Y = ROWS * BLOCK_SIZE;  // 300
 
   // area di gioco
 	LCD_DrawLine(0, 0, limit_X, 0, White);
@@ -56,6 +61,8 @@ void Init_Game_Graphics(void){
 	GUI_Text(160, 80,  (uint8_t *)"0",        Red,   BG_COLOR);
 	GUI_Text(160, 100, (uint8_t *)"Highest:", White, BG_COLOR);
 	GUI_Text(160, 120, (uint8_t *)"0",        Red,   BG_COLOR);
+	GUI_Text(160, 140, (uint8_t *)"Rows:", White, BG_COLOR);
+	GUI_Text(160, 160, (uint8_t *)"0",        Red,   BG_COLOR);
 	GUI_Text(160, 180, (uint8_t *)" Press ", White, Red);
 	GUI_Text(160, 200, (uint8_t *)" 'key1' ", White, Red);
 	GUI_Text(160, 220, (uint8_t *)" to start ",   White, Red);
@@ -111,11 +118,22 @@ void redraw_board(void){
     // blocchi fissi
   for (r = 0; r < ROWS; r++) {
 		for (c = 0; c < COLS; c++) {
-			if (board[r][c] != 0) {
-				int id = board[r][c] - 1;
-				Draw_Block(r, c, PIECE_COLORS[id]);
-			}
-		}}
+			 // se è un powerup, disegna colore speciale
+                if (pu[r][c] == PU_CLEAR_HALF) {
+                    Draw_Block(r, c, COLOR_PU_CLEAR_HALF);
+                }
+                else if (pu[r][c] == PU_SLOW) {
+                    Draw_Block(r, c, COLOR_PU_SLOW);
+                }
+                else {
+                    // blocco normale
+																	if(board[r][c] != 0 ){
+                    int id = board[r][c] - 1;
+                    Draw_Block(r, c, PIECE_COLORS[id]);
+																	}
+                }
+		}
+		}
 		Draw_Grid();
 		LPC_TIM0->TC = 0; //reset timer
 }

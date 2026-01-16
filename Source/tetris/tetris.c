@@ -8,11 +8,13 @@
 
 /* ===== Board e stato ===== */
 volatile int board[ROWS][COLS];
+volatile uint8_t pu[ROWS][COLS];   // 0 none, 1 clear_half, 2 slow
 volatile GameState gameState = GAME_PAUSED;
 static uint8_t firstStart = 1;
 
 volatile uint32_t score = 0;
 volatile uint32_t high_score = 0;
+volatile uint32_t row_count = 0;
 
 volatile uint8_t gravity_event = 0;
 volatile uint8_t softdrop_on   = 0;
@@ -21,9 +23,14 @@ volatile uint8_t key2_event    = 0;
 volatile uint8_t right_activate = 0;
 volatile uint8_t left_activate = 0;
 volatile uint8_t up_activate = 0;
+volatile uint8_t trig_clear_half = 0;
+volatile uint8_t trig_slow = 0;
 
 volatile int last_cleared      = 0;
 volatile uint8_t score_dirty   = 0;
+static int next_powerup_at = 5;
+static int next_malus_at = 1;
+
 
 /* ===== Stato pezzo corrente ===== */
 static int cur_id  = 0;
@@ -64,8 +71,9 @@ const uint8_t PIECES[7][4][4] = {
     {{0,0,0,0},{1,1,0,0},{0,1,1,0},{0,0,0,0}}
 };
 
-const uint16_t PIECE_COLORS[7] = {
-    COLOR_I, COLOR_O, COLOR_T, COLOR_J, COLOR_L, COLOR_S, COLOR_Z
+
+const uint16_t PIECE_COLORS[8] = {
+    COLOR_I, COLOR_O, COLOR_T, COLOR_J, COLOR_L, COLOR_S, COLOR_Z, COLOR_MALUS
 };
 
 /* ===== funzioni interne logica ===== */
@@ -110,6 +118,16 @@ void Reset_Board(void){
 		}
 	}
 }
+void Reset_PU(void){
+	int r;
+	int c;
+    
+	for (r = 0; r < ROWS; r++) {
+		for (c = 0; c < COLS; c++) {
+			pu[r][c] = 0;
+		}
+	}
+}
 
 static void lock_piece(void){
 	int i;
@@ -142,7 +160,7 @@ void spawn_piece(void){
         gameState = GAME_OVER;
         /* Messaggio grafico */
         extern void GUI_Text(int x, int y, uint8_t *text, uint16_t fg, uint16_t bg);
-        GUI_Text(160, 140, (uint8_t *)"GAME OVER", White, Red);
+        GUI_Text(160, 200, (uint8_t *)"GAME OVER", White, Red);
         return;
     }
 
@@ -156,6 +174,7 @@ void toggle_pause(void)
     if (firstStart || gameState == GAME_OVER) {
         if (gameState == GAME_OVER) {
             Reset_Board();
+												Reset_PU();
             redraw_board();
 
             if (score > high_score) high_score = score;
@@ -171,25 +190,24 @@ void toggle_pause(void)
         gameState = GAME_RUNNING;
         firstStart = 0;
 
-       	GUI_Text(160, 180, (uint8_t *)"          ", White, BG_COLOR);
+								GUI_Text(160, 180, (uint8_t *)"          ", White, BG_COLOR);
 								GUI_Text(160, 200, (uint8_t *)"          ", White, BG_COLOR);
 								GUI_Text(160, 220, (uint8_t *)"          ",   White, BG_COLOR);
-								GUI_Text(160, 140, (uint8_t *)"          ",   White,BG_COLOR);
-								GUI_Text(170, 140, (uint8_t *)"PLAYING",   White,COLOR_T);
+								GUI_Text(170, 200, (uint8_t *)"PLAYING",   White,COLOR_T);
         return;
     }
 
     if (gameState == GAME_RUNNING) {
         gameState = GAME_PAUSED;
-        GUI_Text(160, 140, (uint8_t *)"          ", COLOR_T, BG_COLOR);
-        GUI_Text(170, 140, (uint8_t *)"PAUSED",   White, COLOR_T);
+        GUI_Text(160, 200, (uint8_t *)"          ", COLOR_T, BG_COLOR);
+        GUI_Text(170, 200, (uint8_t *)"PAUSED",   White, COLOR_T);
         return;
     }
 
     if (gameState == GAME_PAUSED) {
         gameState = GAME_RUNNING;
-        GUI_Text(160, 140, (uint8_t *)"        ", COLOR_T, BG_COLOR);
-        GUI_Text(170, 140, (uint8_t *)"PLAYING",   White,COLOR_T);
+        GUI_Text(160, 200, (uint8_t *)"        ", COLOR_T, BG_COLOR);
+        GUI_Text(170, 200, (uint8_t *)"PLAYING",   White,COLOR_T);
         return;
     }
 }
@@ -301,10 +319,11 @@ void tetris_hardDrop(void)
 
 // funzione per pulire le righe completate, ritorna il numero di righe cancellate
 int clear_lines(void){ 
-	int cleared = 0;
-	int r;
-	int c;
-	int i;
+    int cleared = 0;
+    int r, c, i;
+
+    trig_clear_half = 0;
+    trig_slow = 0;
 
     for (r = ROWS - 1; r >= 0; r--) {
         int full = 1;
@@ -313,23 +332,47 @@ int clear_lines(void){
         }
 
         if (full) {
+            // 1) rileva powerup presenti nella riga r (prima di spostare tutto)
+            for (c = 0; c < COLS; c++) {
+                if (pu[r][c] == PU_CLEAR_HALF) trig_clear_half = 1;
+                if (pu[r][c] == PU_SLOW)       trig_slow = 1;
+            }
+
             cleared++;
 
+            // 2) shift down di board + pu
             for (i = r; i > 0; i--) {
                 for (c = 0; c < COLS; c++) {
                     board[i][c] = board[i - 1][c];
+                    pu[i][c]    = pu[i - 1][c];
                 }
             }
 
-            for (c = 0; c < COLS; c++) board[0][c] = 0;
+            // 3) clear top row
+            for (c = 0; c < COLS; c++) {
+                board[0][c] = 0;
+                pu[0][c]    = PU_NONE;
+            }
 
-            r++; 
+            r++; // ricontrolla stessa riga
         }
     }
 
+    row_count += cleared;
+
+    while (row_count >= next_powerup_at) {
+        spawn_powerup();
+        next_powerup_at += 5;
+    }
+
+    while (row_count >= next_malus_at) {
+        activate_malus_line();
+        next_malus_at += 1;
+    }
 
     return cleared;
 }
+
 
 static uint8_t board_is_empty(void)
 {
@@ -355,7 +398,125 @@ uint32_t compute_mr0_from_adc(uint16_t adc, uint8_t softdrop){
     return (uint32_t)(num / speed_milli);
 }
 
+// POWER UP
 
+static void spawn_powerup(void)
+{
+    //celle occupate
+ int n = 0;
+	int y;
+	int x;
+   
+ for (y = 0; y < ROWS; y++){
+		for (x = 0; x < COLS; x++){
+			if (board[y][x] != 0){
+				n++;
+			}
+		}
+	}
+	
+	if (n == 0) return;
+
+	// indice casuale 0..n-1 
+	int k = rand() % n;
+
+ // trova la k-esima cella occupata
+	for (y = 0; y < ROWS; y++) {
+		for (x = 0; x < COLS; x++) {
+			if (board[y][x] != 0) {
+				if (k == 0) {
+					pu[y][x] = (rand() % 2) ? PU_CLEAR_HALF : PU_SLOW;
+					return;
+				}
+				k--;
+			}
+		}
+	}
+}
+void activate_powerup_half(void) {
+
+    int start_row = ROWS / 2; // Metà inferiore
+    int cleared_count = 0;
+
+    // Cancella le righe
+		int r, c, k;
+    for (r = start_row; r < ROWS; r++) {
+        for (c = 0; c < COLS; c++) {
+									board[r][c] = 0;
+									pu[0][0] = 0;
+        }
+        cleared_count++;
+    }
+				
+				// Shift delle linee
+				for(k = 0; k < start_row ; k++) {
+					for(c = 0; c < COLS; c++) {
+						board[k+start_row][c] = board[k][c];
+						pu[k+start_row][c] = pu[k][c];
+						pu[k][c] = 0;
+						board[k][c] = 0;
+					}
+				}
+
+    // Calcolo Punteggio Speciale [cite: 59]
+    // "groups of 4 lines" -> Punti Tetris (es. 610)
+    // "last group will contain less than 4" -> Punti normali (es. 100/riga)
+    
+    int groups_of_4 = cleared_count / 4;
+    int remainder = cleared_count % 4;
+    
+    score += (groups_of_4 * 610); // Punti per i gruppi da 4
+    score += (remainder * 100);   // Punti per le righe rimanenti
+    
+				if(score> high_score){
+					high_score = score;
+				}
+    // Nota: Non aggiungiamo a lines_cleared per lo spawn dei powerup
+    // per evitare loop infiniti, ma aggiorniamo le statistiche
+    row_count += cleared_count; 
+    
+				score_dirty = 1;
+				redraw_board();
+}
+
+void activate_powerup_slow(void) {
+    //gestita nel main
+}
+
+// MALUS
+void activate_malus_line(void) {
+    int r, c;
+    
+    // Check Overflow
+    for(c = 0; c < COLS; c++) {
+        if (board[0][c] != 0) {
+									gameState = GAME_OVER;
+									return;
+        }
+    }
+
+    // Shift delle linee verso l'alto
+    for(r = 0; r < ROWS - 1; r++) {
+       for(c = 0; c < COLS; c++) {
+           board[r][c] = board[r+1][c];
+       }
+    }
+    
+    // Genera la linea malus
+    int last_row = ROWS - 1;
+    for(c = 0; c < COLS; c++) board[last_row][c] = 0;
+    
+    int filled = 0;
+    while(filled < 7) {
+        int col = rand() % COLS;
+        if (board[last_row][col] == 0) {
+									board[last_row][col] = 8; // 8: id dei blocchi del malus
+             filled++;
+        }
+    }
+    
+    redraw_board();
+}
 
 
 

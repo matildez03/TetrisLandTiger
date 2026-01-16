@@ -22,6 +22,9 @@ void RIT_IRQHandler (void)
 	static int J_right = 0;
 	static int J_up = 0;
 	
+	ADC_start_conversion();
+ LPC_RIT->RICTRL |= (1<<3);
+	
 	if((LPC_GPIO1->FIOPIN & (1<<25)) == 0){	
 		
 		/* Joytick J_Select pressed p1.25*/
@@ -159,9 +162,9 @@ void RIT_IRQHandler (void)
 		if((LPC_GPIO2->FIOPIN & (1<<12)) != 0){	/* KEY2 NOT pressed */			
 			down_2=0;			
 			NVIC_EnableIRQ(EINT2_IRQn);							 /* enable Button interrupts			*/
-			LPC_PINCON->PINSEL4 = (LPC_PINCON->PINSEL4 & ~(3 << 24)) | (1 << 24);		
+			LPC_PINCON->PINSEL4 |= (1 << 24);		
 		}	
-		LPC_RIT->RICTRL |= 0x1;
+		//LPC_RIT->RICTRL |= 0x1;
 	}
 	
 		reset_RIT();
