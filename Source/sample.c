@@ -17,6 +17,9 @@ extern uint8_t ScaleFlag; // <- ScaleFlag needs to visible in order for the emul
 
 #define tim0Period  0x017D7840 // FLAG DA MODIFICARE
 #define RITPeriod  0x000BEBC2 // FLAG DA MODIFICARE (0X0003D090=10ms, 0x0007A120 = 20ms, 0x000B71B0= 30)
+#define AUDIO_FS 20000
+#define PCLK     25000000
+#define TIM1_PERIOD (PCLK / AUDIO_FS)
 
 int main(void)
  {
@@ -32,8 +35,13 @@ int main(void)
 
 	init_timer(0, 0, 0, 3, tim0Period); 	// Timer0 inizializzazione con periodo 0,02 sec per gravitystep //1s*25Mhz = 25.000.000 = 0x017D7840
 	enable_timer(0);
-	
+
+		
 	ADC_init();
+		
+	audio_init(20000);      // Fs = 20kHz
+ audio_set_volume(70);   // basso
+
 
 	//POWER DOWN MODE
 	LPC_SC->PCON |= 0x1;      // set PM0 = 1
@@ -43,8 +51,6 @@ int main(void)
   while (1)	
   {
 	
-		//ADC_start_conversion();  
-
 		if (key1_event){
 			key1_event = 0;
 			toggle_pause();

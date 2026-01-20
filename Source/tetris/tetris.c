@@ -29,7 +29,7 @@ volatile uint8_t trig_slow = 0;
 volatile int last_cleared      = 0;
 volatile uint8_t score_dirty   = 0;
 static int next_powerup_at = 5;
-static int next_malus_at = 1;
+static int next_malus_at = 10;
 
 
 /* ===== Stato pezzo corrente ===== */
@@ -143,6 +143,7 @@ static void lock_piece(void){
             }
         }
     }
+				sfx_piece_drop();
 				score = score +10;
 				if (score > high_score) high_score = score;
 }
@@ -161,6 +162,7 @@ void spawn_piece(void){
         /* Messaggio grafico */
         extern void GUI_Text(int x, int y, uint8_t *text, uint16_t fg, uint16_t bg);
         GUI_Text(160, 200, (uint8_t *)"GAME OVER", White, Red);
+								sfx_game_over();
         return;
     }
 
@@ -186,6 +188,8 @@ void toggle_pause(void)
             seed_rng_once();
         }
 
+								play_tetris_theme();
+
         spawn_piece();
         gameState = GAME_RUNNING;
         firstStart = 0;
@@ -199,6 +203,7 @@ void toggle_pause(void)
 
     if (gameState == GAME_RUNNING) {
         gameState = GAME_PAUSED;
+								audio_silence();
         GUI_Text(160, 200, (uint8_t *)"          ", COLOR_T, BG_COLOR);
         GUI_Text(170, 200, (uint8_t *)"PAUSED",   White, COLOR_T);
         return;
@@ -206,6 +211,7 @@ void toggle_pause(void)
 
     if (gameState == GAME_PAUSED) {
         gameState = GAME_RUNNING;
+								play_tetris_theme();
         GUI_Text(160, 200, (uint8_t *)"        ", COLOR_T, BG_COLOR);
         GUI_Text(170, 200, (uint8_t *)"PLAYING",   White,COLOR_T);
         return;
@@ -263,7 +269,7 @@ void tetris_rotate(void)
 void tetris_gravityStep(void)
 {
     if (gameState != GAME_RUNNING) return;
-
+				audio_music_tick(1);
     if (can_place(cur_r + 1, cur_c, cur_id, cur_rot)) {
         gfx_erase_piece_at(cur_r, cur_c, cur_id, cur_rot);
         cur_r++;
@@ -328,8 +334,13 @@ int clear_lines(void){
     for (r = ROWS - 1; r >= 0; r--) {
         int full = 1;
         for (c = 0; c < COLS; c++) {
-            if (board[r][c] == 0) { full = 0; break; }
-        }
+            if (board[r][c] == 0) { 
+													if(pu[r][c] == 0){
+														full = 0; break;
+													} 
+												}				
+								}
+								
 
         if (full) {
             // 1) rileva powerup presenti nella riga r (prima di spostare tutto)
@@ -367,7 +378,7 @@ int clear_lines(void){
 
     while (row_count >= next_malus_at) {
         activate_malus_line();
-        next_malus_at += 1;
+        next_malus_at += 10;
     }
 
     return cleared;
@@ -471,8 +482,7 @@ void activate_powerup_half(void) {
 				if(score> high_score){
 					high_score = score;
 				}
-    // Nota: Non aggiungiamo a lines_cleared per lo spawn dei powerup
-    // per evitare loop infiniti, ma aggiorniamo le statistiche
+				
     row_count += cleared_count; 
     
 				score_dirty = 1;
@@ -491,6 +501,10 @@ void activate_malus_line(void) {
     for(c = 0; c < COLS; c++) {
         if (board[0][c] != 0) {
 									gameState = GAME_OVER;
+        /* Messaggio grafico */
+        extern void GUI_Text(int x, int y, uint8_t *text, uint16_t fg, uint16_t bg);
+        GUI_Text(160, 200, (uint8_t *)"GAME OVER", White, Red);
+								sfx_game_over();
 									return;
         }
     }

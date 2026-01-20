@@ -10,6 +10,15 @@
 ** parameters:			None
 ** Returned value:		None
 **
+
+init_timer(
+    timer_num,   // 0 = TIMER0
+    prescaler,   // PR
+    match_reg,   // MRx (0)
+    mode,        // MCR (3 = interrupt + reset)
+    period       // valore di match
+);
+
 ******************************************************************************/
 extern unsigned char led_value;					/* defined in funct_led								*/
 extern volatile uint8_t gravity_event;
@@ -32,37 +41,9 @@ void TIMER0_IRQHandler(void)
 ** Returned value:		None
 **
 ******************************************************************************/
-void TIMER1_IRQHandler (void)
-{
-  /* Match register 0 interrupt service routine */
-	if (LPC_TIM1->IR & 01)
-	{
-		
-		LPC_TIM1->IR = 1;			/* clear interrupt flag */
-	}
-		/* Match register 1 interrupt service routine */
-	  /* it should be possible to access to both interrupt requests in the same procedure*/
-	if(LPC_TIM1->IR & 02)
-  {
-	
-		LPC_TIM1->IR =  2 ;			/* clear interrupt flag */	
-	}
-	/* Match register 2 interrupt service routine */
-  /* it should be possible to access to both interrupt requests in the same procedure*/
-	if(LPC_TIM1->IR & 4)
-  {
-		
-		LPC_TIM1->IR =  4 ;			/* clear interrupt flag */	
-	}
-		/* Match register 3 interrupt service routine */
-  	/* it should be possible to access to both interrupt requests in the same procedure*/
-	if(LPC_TIM1->IR & 8)
-  {
-	 
-		LPC_TIM1->IR =  8 ;			/* clear interrupt flag */	
-	}
-  return;
-}
+// TIMER 1 USATO PER AUDIO --> HANDLER IN ../audio/audio.c
+
+
 
 /******************************************************************************
 ** Function name:		Timer2_IRQHandler
